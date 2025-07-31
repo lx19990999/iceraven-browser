@@ -163,3 +163,5 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 parseQuery(document.documentURI);
+
+setTimeout(window.location.reload(), 1000);

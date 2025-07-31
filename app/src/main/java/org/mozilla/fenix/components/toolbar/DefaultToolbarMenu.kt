@@ -162,63 +162,36 @@ open class DefaultToolbarMenu(
 
     // Predicates that need to be repeatedly called as the session changes
     @VisibleForTesting(otherwise = PRIVATE)
-    fun canAddToHomescreen(): Boolean =
-        selectedSession != null && isPinningSupported &&
-            !context.components.useCases.webAppUseCases.isInstallable()
+    fun canAddToHomescreen(): Boolean = false
 
     /**
      * Should the menu item to install as PWA be visible?
      */
     @VisibleForTesting(otherwise = PRIVATE)
-    fun canAddAppToHomescreen(): Boolean =
-        selectedSession != null && isPinningSupported &&
-            context.components.useCases.webAppUseCases.isInstallable()
+    fun canAddAppToHomescreen(): Boolean = false
 
     /**
      * Should the "Open in regular tab" menu item be visible?
      */
     @VisibleForTesting(otherwise = PRIVATE)
-    fun shouldShowOpenInRegularTab(): Boolean = selectedSession?.let { session ->
-        // This feature is gated behind Nightly for the time being.
-        Config.channel.isNightlyOrDebug &&
-            // This feature is explicitly for users opening links in private tabs.
-            context.settings().openLinksInAPrivateTab &&
-            // and is only visible in private tabs.
-            session.content.private
-    } ?: false
+    fun shouldShowOpenInRegularTab(): Boolean = false
 
     @VisibleForTesting(otherwise = PRIVATE)
-    fun shouldShowOpenInApp(): Boolean = selectedSession?.let { session ->
-        val appLink = context.components.useCases.appLinksUseCases.appLinkRedirect
-        appLink(session.content.url).hasExternalApp()
-    } ?: false
+    fun shouldShowOpenInApp(): Boolean = false
 
     @VisibleForTesting(otherwise = PRIVATE)
-    fun shouldShowReaderViewCustomization(): Boolean = selectedSession?.let {
-        store.state.findTab(it.id)?.readerState?.active
-    } ?: false
+    fun shouldShowReaderViewCustomization(): Boolean = false
 
     /**
      * Should Translations menu item be visible?
      */
     @VisibleForTesting(otherwise = PRIVATE)
-    fun shouldShowTranslations(): Boolean {
-        val isEngineSupported = store.state.translationEngine.isEngineSupported
-        return selectedSession?.let {
-            isEngineSupported == true &&
-                FxNimbus.features.translations.value().mainFlowBrowserMenuEnabled
-        } ?: false
-    }
+    fun shouldShowTranslations(): Boolean = false
 
     /**
      * Return whether Report Broken Site menu item is visible
      */
-    private fun shouldShowWebCompatReporter(): Boolean {
-        val url = store.state.selectedTab?.content?.url
-        val isAboutUrl = url?.isAboutUrl() ?: false
-        val isContentUrl = url?.isContentUrl() ?: false
-        return !isAboutUrl && !isContentUrl
-    }
+    private fun shouldShowWebCompatReporter(): Boolean = false
     // End of predicates //
 
     @VisibleForTesting
@@ -230,21 +203,21 @@ open class DefaultToolbarMenu(
         onItemTapped.invoke(ToolbarMenu.Item.NewTab)
     }
 
-    private val historyItem = BrowserMenuImageText(
-        context.getString(R.string.library_history),
-        R.drawable.ic_history,
-        primaryTextColor(),
-    ) {
-        onItemTapped.invoke(ToolbarMenu.Item.History)
-    }
+    // private val historyItem = BrowserMenuImageText(
+    //     context.getString(R.string.library_history),
+    //     R.drawable.ic_history,
+    //     primaryTextColor(),
+    // ) {
+    //     onItemTapped.invoke(ToolbarMenu.Item.History)
+    // }
 
-    private val downloadsItem = BrowserMenuImageText(
-        context.getString(R.string.library_downloads),
-        R.drawable.ic_download,
-        primaryTextColor(),
-    ) {
-        onItemTapped.invoke(ToolbarMenu.Item.Downloads)
-    }
+    // private val downloadsItem = BrowserMenuImageText(
+    //     context.getString(R.string.library_downloads),
+    //     R.drawable.ic_download,
+    //     primaryTextColor(),
+    // ) {
+    //     onItemTapped.invoke(ToolbarMenu.Item.Downloads)
+    // }
 
     private val passwordsItem = BrowserMenuImageText(
         context.getString(R.string.preferences_sync_logins_2),
@@ -266,103 +239,103 @@ open class DefaultToolbarMenu(
         onItemTapped.invoke(ToolbarMenu.Item.FindInPage)
     }
 
-    private val translationsItem = BrowserMenuImageText(
-        label = context.getString(R.string.browser_menu_translations),
-        imageResource = R.drawable.mozac_ic_translate_24,
-        iconTintColorResource = primaryTextColor(),
-    ) {
-        onItemTapped.invoke(ToolbarMenu.Item.Translate)
-    }
+    // private val translationsItem = BrowserMenuImageText(
+    //     label = context.getString(R.string.browser_menu_translations),
+    //     imageResource = R.drawable.mozac_ic_translate_24,
+    //     iconTintColorResource = primaryTextColor(),
+    // ) {
+    //     onItemTapped.invoke(ToolbarMenu.Item.Translate)
+    // }
 
-    private val desktopSiteItem = BrowserMenuImageSwitch(
-        imageResource = R.drawable.ic_desktop,
-        label = context.getString(R.string.browser_menu_desktop_site),
-        initialState = {
-            selectedSession?.content?.desktopMode ?: false
-        },
-    ) { checked ->
-        onItemTapped.invoke(ToolbarMenu.Item.RequestDesktop(checked))
-    }
+    // private val desktopSiteItem = BrowserMenuImageSwitch(
+    //     imageResource = R.drawable.ic_desktop,
+    //     label = context.getString(R.string.browser_menu_desktop_site),
+    //     initialState = {
+    //         selectedSession?.content?.desktopMode ?: false
+    //     },
+    // ) { checked ->
+    //     onItemTapped.invoke(ToolbarMenu.Item.RequestDesktop(checked))
+    // }
 
-    private val openInRegularTabItem = BrowserMenuImageText(
-        label = context.getString(R.string.browser_menu_open_in_regular_tab),
-        imageResource = R.drawable.ic_open_in_regular_tab,
-    ) {
-        onItemTapped.invoke(ToolbarMenu.Item.OpenInRegularTab)
-    }
+    // private val openInRegularTabItem = BrowserMenuImageText(
+    //     label = context.getString(R.string.browser_menu_open_in_regular_tab),
+    //     imageResource = R.drawable.ic_open_in_regular_tab,
+    // ) {
+    //     onItemTapped.invoke(ToolbarMenu.Item.OpenInRegularTab)
+    // }
 
-    private val customizeReaderView = BrowserMenuImageText(
-        label = context.getString(R.string.browser_menu_customize_reader_view),
-        imageResource = R.drawable.ic_readermode_appearance,
-        iconTintColorResource = primaryTextColor(),
-    ) {
-        onItemTapped.invoke(ToolbarMenu.Item.CustomizeReaderView)
-    }
+    // private val customizeReaderView = BrowserMenuImageText(
+    //     label = context.getString(R.string.browser_menu_customize_reader_view),
+    //     imageResource = R.drawable.ic_readermode_appearance,
+    //     iconTintColorResource = primaryTextColor(),
+    // ) {
+    //     onItemTapped.invoke(ToolbarMenu.Item.CustomizeReaderView)
+    // }
 
-    private val openInApp = BrowserMenuHighlightableItem(
-        label = context.getString(R.string.browser_menu_open_app_link),
-        startImageResource = R.drawable.ic_open_in_app,
-        iconTintColorResource = primaryTextColor(),
-        highlight = BrowserMenuHighlight.LowPriority(
-            label = context.getString(R.string.browser_menu_open_app_link),
-            notificationTint = getColor(context, R.color.fx_mobile_icon_color_information),
-        ),
-        isHighlighted = { !context.settings().openInAppOpened },
-    ) {
-        onItemTapped.invoke(ToolbarMenu.Item.OpenInApp)
-    }
+    // private val openInApp = BrowserMenuHighlightableItem(
+    //     label = context.getString(R.string.browser_menu_open_app_link),
+    //     startImageResource = R.drawable.ic_open_in_app,
+    //     iconTintColorResource = primaryTextColor(),
+    //     highlight = BrowserMenuHighlight.LowPriority(
+    //         label = context.getString(R.string.browser_menu_open_app_link),
+    //         notificationTint = getColor(context, R.color.fx_mobile_icon_color_information),
+    //     ),
+    //     isHighlighted = { !context.settings().openInAppOpened },
+    // ) {
+    //     onItemTapped.invoke(ToolbarMenu.Item.OpenInApp)
+    // }
 
-    private val addToHomeScreenItem = BrowserMenuImageText(
-        label = context.getString(R.string.browser_menu_add_to_homescreen),
-        imageResource = R.drawable.mozac_ic_add_to_homescreen_24,
-        iconTintColorResource = primaryTextColor(),
-        isCollapsingMenuLimit = true,
-    ) {
-        onItemTapped.invoke(ToolbarMenu.Item.AddToHomeScreen)
-    }
+    // private val addToHomeScreenItem = BrowserMenuImageText(
+    //     label = context.getString(R.string.browser_menu_add_to_homescreen),
+    //     imageResource = R.drawable.mozac_ic_add_to_homescreen_24,
+    //     iconTintColorResource = primaryTextColor(),
+    //     isCollapsingMenuLimit = true,
+    // ) {
+    //     onItemTapped.invoke(ToolbarMenu.Item.AddToHomeScreen)
+    // }
 
-    private val addAppToHomeScreenItem = BrowserMenuImageText(
-        label = context.getString(R.string.browser_menu_add_app_to_homescreen),
-        imageResource = R.drawable.mozac_ic_add_to_homescreen_24,
-        iconTintColorResource = primaryTextColor(),
-        isCollapsingMenuLimit = true,
-    ) {
-        onItemTapped.invoke(ToolbarMenu.Item.InstallPwaToHomeScreen)
-    }
+    // private val addAppToHomeScreenItem = BrowserMenuImageText(
+    //     label = context.getString(R.string.browser_menu_add_app_to_homescreen),
+    //     imageResource = R.drawable.mozac_ic_add_to_homescreen_24,
+    //     iconTintColorResource = primaryTextColor(),
+    //     isCollapsingMenuLimit = true,
+    // ) {
+    //     onItemTapped.invoke(ToolbarMenu.Item.InstallPwaToHomeScreen)
+    // }
 
-    private val addRemoveTopSitesItem = TwoStateBrowserMenuImageText(
-        primaryLabel = context.getString(R.string.browser_menu_add_to_shortcuts),
-        secondaryLabel = context.getString(R.string.browser_menu_remove_from_shortcuts),
-        primaryStateIconResource = R.drawable.ic_top_sites,
-        secondaryStateIconResource = R.drawable.ic_top_sites,
-        iconTintColorResource = primaryTextColor(),
-        isInPrimaryState = { !isCurrentUrlPinned },
-        isInSecondaryState = { isCurrentUrlPinned },
-        primaryStateAction = {
-            isCurrentUrlPinned = true
-            onItemTapped.invoke(ToolbarMenu.Item.AddToTopSites)
-        },
-        secondaryStateAction = {
-            isCurrentUrlPinned = false
-            onItemTapped.invoke(ToolbarMenu.Item.RemoveFromTopSites)
-        },
-    )
+    // private val addRemoveTopSitesItem = TwoStateBrowserMenuImageText(
+    //     primaryLabel = context.getString(R.string.browser_menu_add_to_shortcuts),
+    //     secondaryLabel = context.getString(R.string.browser_menu_remove_from_shortcuts),
+    //     primaryStateIconResource = R.drawable.ic_top_sites,
+    //     secondaryStateIconResource = R.drawable.ic_top_sites,
+    //     iconTintColorResource = primaryTextColor(),
+    //     isInPrimaryState = { !isCurrentUrlPinned },
+    //     isInSecondaryState = { isCurrentUrlPinned },
+    //     primaryStateAction = {
+    //         isCurrentUrlPinned = true
+    //         onItemTapped.invoke(ToolbarMenu.Item.AddToTopSites)
+    //     },
+    //     secondaryStateAction = {
+    //         isCurrentUrlPinned = false
+    //         onItemTapped.invoke(ToolbarMenu.Item.RemoveFromTopSites)
+    //     },
+    // )
 
-    private val saveToCollectionItem = BrowserMenuImageText(
-        label = context.getString(R.string.browser_menu_save_to_collection_2),
-        imageResource = R.drawable.ic_tab_collection,
-        iconTintColorResource = primaryTextColor(),
-    ) {
-        onItemTapped.invoke(ToolbarMenu.Item.SaveToCollection)
-    }
+    // private val saveToCollectionItem = BrowserMenuImageText(
+    //     label = context.getString(R.string.browser_menu_save_to_collection_2),
+    //     imageResource = R.drawable.ic_tab_collection,
+    //     iconTintColorResource = primaryTextColor(),
+    // ) {
+    //     onItemTapped.invoke(ToolbarMenu.Item.SaveToCollection)
+    // }
 
-    private val printPageItem = BrowserMenuImageText(
-        label = context.getString(R.string.menu_print),
-        imageResource = R.drawable.ic_print,
-        iconTintColorResource = primaryTextColor(),
-    ) {
-        onItemTapped.invoke(ToolbarMenu.Item.PrintContent)
-    }
+    // private val printPageItem = BrowserMenuImageText(
+    //     label = context.getString(R.string.menu_print),
+    //     imageResource = R.drawable.ic_print,
+    //     iconTintColorResource = primaryTextColor(),
+    // ) {
+    //     onItemTapped.invoke(ToolbarMenu.Item.PrintContent)
+    // }
 
     @VisibleForTesting
     internal val settingsItem = BrowserMenuHighlightableItem(
@@ -405,29 +378,29 @@ open class DefaultToolbarMenu(
         handleBookmarkItemTapped()
     }
 
-    private val deleteDataOnQuit = BrowserMenuImageText(
-        label = context.getString(R.string.delete_browsing_data_on_quit_action),
-        imageResource = R.drawable.mozac_ic_cross_circle_24,
-        iconTintColorResource = primaryTextColor(),
-    ) {
-        onItemTapped.invoke(ToolbarMenu.Item.Quit)
-    }
+    // private val deleteDataOnQuit = BrowserMenuImageText(
+    //     label = context.getString(R.string.delete_browsing_data_on_quit_action),
+    //     imageResource = R.drawable.mozac_ic_cross_circle_24,
+    //     iconTintColorResource = primaryTextColor(),
+    // ) {
+    //     onItemTapped.invoke(ToolbarMenu.Item.Quit)
+    // }
 
-    private fun syncMenuItem(): BrowserMenuItem {
-        return BrowserMenuSignIn(primaryTextColor()) {
-            onItemTapped.invoke(
-                ToolbarMenu.Item.SyncAccount(accountManager.accountState),
-            )
-        }
-    }
+    // private fun syncMenuItem(): BrowserMenuItem {
+    //     return BrowserMenuSignIn(primaryTextColor()) {
+    //         onItemTapped.invoke(
+    //             ToolbarMenu.Item.SyncAccount(accountManager.accountState),
+    //         )
+    //     }
+    // }
 
-    private val reportBrokenSite = BrowserMenuImageText(
-        label = context.getString(R.string.browser_menu_webcompat_reporter),
-        imageResource = R.drawable.mozac_ic_lightbulb_24,
-        iconTintColorResource = primaryTextColor(),
-    ) {
-        onItemTapped.invoke(ToolbarMenu.Item.ReportBrokenSite)
-    }
+    // private val reportBrokenSite = BrowserMenuImageText(
+    //     label = context.getString(R.string.browser_menu_webcompat_reporter),
+    //     imageResource = R.drawable.mozac_ic_lightbulb_24,
+    //     iconTintColorResource = primaryTextColor(),
+    // ) {
+    //     onItemTapped.invoke(ToolbarMenu.Item.ReportBrokenSite)
+    // }
 
     @VisibleForTesting(otherwise = PRIVATE)
     val coreMenuItems by lazy {
@@ -435,42 +408,42 @@ open class DefaultToolbarMenu(
             listOfNotNull(
                 if (shouldUseBottomToolbar) null else menuToolbar,
                 newTabItem,
-                BrowserMenuDivider(),
+                // BrowserMenuDivider(),
                 bookmarksItem,
-                historyItem,
-                downloadsItem,
+                // historyItem,
+                // downloadsItem,
                 passwordsItem,
                 extensionsItem,
-                if (notShowSignInButton) null else syncMenuItem(),
-                BrowserMenuDivider(),
+                // if (notShowSignInButton) null else syncMenuItem(),
+                // BrowserMenuDivider(),
                 findInPageItem,
-                translationsItem.apply { visible = ::shouldShowTranslations },
-                desktopSiteItem.apply { visible = { store.state.selectedTab?.content?.isPdf == false } },
-                openInRegularTabItem.apply { visible = ::shouldShowOpenInRegularTab },
-                customizeReaderView.apply { visible = ::shouldShowReaderViewCustomization },
-                openInApp.apply { visible = ::shouldShowOpenInApp },
-                reportBrokenSite.apply { visible = ::shouldShowWebCompatReporter },
-                BrowserMenuDivider(),
-                addToHomeScreenItem.apply { visible = ::canAddToHomescreen },
-                addAppToHomeScreenItem.apply { visible = ::canAddAppToHomescreen },
-                if (shouldShowTopSites) addRemoveTopSitesItem else null,
-                saveToCollectionItem,
-                if (FxNimbus.features.print.value().browserPrintEnabled &&
-                    !context.isAndroidAutomotiveAvailable()
-                ) {
-                    printPageItem
-                } else {
-                    null
-                },
-                BrowserMenuDivider(),
+                // translationsItem.apply { visible = ::shouldShowTranslations },
+                // desktopSiteItem.apply { visible = { store.state.selectedTab?.content?.isPdf == false } },
+                // openInRegularTabItem.apply { visible = ::shouldShowOpenInRegularTab },
+                // customizeReaderView.apply { visible = ::shouldShowReaderViewCustomization },
+                // openInApp.apply { visible = ::shouldShowOpenInApp },
+                // reportBrokenSite.apply { visible = ::shouldShowWebCompatReporter },
+                // BrowserMenuDivider(),
+                // addToHomeScreenItem.apply { visible = ::canAddToHomescreen },
+                // addAppToHomeScreenItem.apply { visible = ::canAddAppToHomescreen },
+                // if (shouldShowTopSites) addRemoveTopSitesItem else null,
+                // saveToCollectionItem,
+                // if (FxNimbus.features.print.value().browserPrintEnabled &&
+                //     !context.isAndroidAutomotiveAvailable()
+                // ) {
+                //     printPageItem
+                // } else {
+                //     null
+                // },
+                // BrowserMenuDivider(),
                 settingsItem,
-                if (shouldDeleteDataOnQuit) deleteDataOnQuit else null,
-                if (shouldUseBottomToolbar) BrowserMenuDivider() else null,
+                // if (shouldDeleteDataOnQuit) deleteDataOnQuit else null,
+                // if (shouldUseBottomToolbar) BrowserMenuDivider() else null,
                 if (shouldUseBottomToolbar) menuToolbar else null,
             )
 
         registerForIsBookmarkedUpdates()
-        registerForScreenReaderUpdates()
+        // registerForScreenReaderUpdates()
 
         menuItems
     }
@@ -527,22 +500,22 @@ open class DefaultToolbarMenu(
         }
     }
 
-    private fun registerForScreenReaderUpdates() {
-        store.flowScoped(lifecycleOwner) { flow ->
-            flow.mapNotNull { state -> state.selectedTab }
-                .distinctUntilChangedBy { it.readerState }
-                .collect {
-                    translationsItem.enabled = !it.readerState.active
-                    translationsItem.iconTintColorResource =
-                        if (it.readerState.active) {
-                            ThemeManager.resolveAttribute(
-                                R.attr.textDisabled,
-                                context,
-                            )
-                        } else {
-                            primaryTextColor()
-                        }
-                }
-        }
-    }
+    // private fun registerForScreenReaderUpdates() {
+    //     store.flowScoped(lifecycleOwner) { flow ->
+    //         flow.mapNotNull { state -> state.selectedTab }
+    //             .distinctUntilChangedBy { it.readerState }
+    //             .collect {
+    //                 translationsItem.enabled = !it.readerState.active
+    //                 translationsItem.iconTintColorResource =
+    //                     if (it.readerState.active) {
+    //                         ThemeManager.resolveAttribute(
+    //                             R.attr.textDisabled,
+    //                             context,
+    //                         )
+    //                     } else {
+    //                         primaryTextColor()
+    //                     }
+    //             }
+    //     }
+    // }
 }

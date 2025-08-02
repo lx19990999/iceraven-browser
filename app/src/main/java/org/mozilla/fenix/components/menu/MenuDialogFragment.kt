@@ -192,6 +192,35 @@ class MenuDialogFragment : BottomSheetDialogFragment() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        
+        // 强制设置对话框位置和大小
+        dialog?.window?.let { window ->
+            val params = window.attributes
+            params.gravity = android.view.Gravity.START or android.view.Gravity.BOTTOM
+            params.x = 0
+            params.y = 0
+            params.horizontalMargin = 0f
+            params.verticalMargin = 0f
+            params.width = requireContext().resources.getDimensionPixelSize(R.dimen.browser_menu_max_width)
+            params.height = android.view.WindowManager.LayoutParams.WRAP_CONTENT
+            window.attributes = params
+            
+            // 清除所有默认的padding和margin
+            window.decorView.setPadding(0, 0, 0, 0)
+            
+            // 设置窗口标志以确保完全控制位置
+            window.setFlags(
+                android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+                android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+            )
+        }
+        
+        // 设置根视图的padding为0
+        view?.setPadding(0, 0, 0, 0)
+    }
+
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         bottomSheetBehavior?.apply {

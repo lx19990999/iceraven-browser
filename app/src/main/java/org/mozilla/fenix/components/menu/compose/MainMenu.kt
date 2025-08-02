@@ -259,21 +259,21 @@ fun MainMenu(
             )
         }
 
-        // 第三行：扩展菜单项
-        if (accessPoint == MenuAccessPoint.Browser) {
-            ExtensionsRow(
-                extensionsMenuItemDescription = extensionsMenuItemDescription,
-                isExtensionsProcessDisabled = isExtensionsProcessDisabled,
-                isExtensionsExpanded = isExtensionsExpanded,
-                isPrivate = isPrivate,
-                webExtensionMenuCount = webExtensionMenuCount,
-                allWebExtensionsDisabled = allWebExtensionsDisabled,
-                onExtensionsMenuClick = onExtensionsMenuClick,
-                extensionSubmenu = extensionSubmenu,
-            )
-        }
-
         MenuGroup {
+            // 第三行：扩展菜单项（放在MenuGroup中以获得更小的间距）
+            if (accessPoint == MenuAccessPoint.Browser) {
+                ExtensionsRowInGroup(
+                    extensionsMenuItemDescription = extensionsMenuItemDescription,
+                    isExtensionsProcessDisabled = isExtensionsProcessDisabled,
+                    isExtensionsExpanded = isExtensionsExpanded,
+                    isPrivate = isPrivate,
+                    webExtensionMenuCount = webExtensionMenuCount,
+                    allWebExtensionsDisabled = allWebExtensionsDisabled,
+                    onExtensionsMenuClick = onExtensionsMenuClick,
+                    extensionSubmenu = extensionSubmenu,
+                )
+            }
+
             MozillaAccountMenuItem(
                 account = account,
                 accountState = accountState,
@@ -629,6 +629,83 @@ private fun CombinedIconsRow(
 }
 
 @Composable
+private fun ExtensionsRowInGroup(
+    extensionsMenuItemDescription: String,
+    isExtensionsProcessDisabled: Boolean,
+    isExtensionsExpanded: Boolean,
+    isPrivate: Boolean,
+    webExtensionMenuCount: Int,
+    allWebExtensionsDisabled: Boolean,
+    onExtensionsMenuClick: () -> Unit,
+    extensionSubmenu: @Composable ColumnScope.() -> Unit,
+) {
+    Column {
+        // 使用MenuItem样式，与登录和设置菜单项保持一致
+        MenuItem(
+            label = stringResource(id = R.string.browser_menu_extensions),
+            beforeIconPainter = if (isExtensionsProcessDisabled && isPrivate) {
+                painterResource(id = R.drawable.mozac_ic_extension_warning_private_24)
+            } else if (isExtensionsProcessDisabled) {
+                painterResource(id = R.drawable.mozac_ic_extension_warning_24)
+            } else {
+                painterResource(id = R.drawable.mozac_ic_extension_24)
+            },
+            state = if (isExtensionsProcessDisabled) {
+                MenuItemState.CRITICAL
+            } else {
+                MenuItemState.ENABLED
+            },
+            onClick = onExtensionsMenuClick,
+        ) {
+            if (isExtensionsProcessDisabled || allWebExtensionsDisabled) {
+                Icon(
+                    painter = painterResource(id = R.drawable.mozac_ic_settings_24),
+                    contentDescription = null,
+                    tint = FirefoxTheme.colors.iconPrimary,
+                )
+                return@MenuItem
+            }
+
+            Row(
+                modifier = Modifier
+                    .background(
+                        color = FirefoxTheme.colors.layerSearch,
+                        shape = RoundedCornerShape(16.dp),
+                    )
+                    .padding(start = if (webExtensionMenuCount > 0) 8.dp else 2.dp, top = 2.dp, bottom = 2.dp, end = 2.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (webExtensionMenuCount > 0) {
+                    Text(
+                        text = webExtensionMenuCount.toString(),
+                        color = FirefoxTheme.colors.textPrimary,
+                        overflow = TextOverflow.Ellipsis,
+                        style = FirefoxTheme.typography.caption,
+                        maxLines = 1,
+                    )
+                }
+
+                Icon(
+                    painter = if (isExtensionsExpanded) {
+                        painterResource(id = R.drawable.mozac_ic_chevron_up_20)
+                    } else {
+                        painterResource(id = R.drawable.mozac_ic_chevron_down_20)
+                    },
+                    contentDescription = null,
+                    tint = FirefoxTheme.colors.iconPrimary,
+                )
+            }
+        }
+
+        MenuItemAnimation(
+            isExpanded = isExtensionsExpanded,
+            submenu = extensionSubmenu,
+        )
+    }
+}
+
+@Composable
 private fun ExtensionsRow(
     extensionsMenuItemDescription: String,
     isExtensionsProcessDisabled: Boolean,
@@ -639,16 +716,91 @@ private fun ExtensionsRow(
     onExtensionsMenuClick: () -> Unit,
     extensionSubmenu: @Composable ColumnScope.() -> Unit,
 ) {
-    MenuGroup {
-        ExtensionsMenuItem(
-            extensionsMenuItemDescription = extensionsMenuItemDescription,
-            isExtensionsProcessDisabled = isExtensionsProcessDisabled,
-            isExtensionsExpanded = isExtensionsExpanded,
-            isPrivate = isPrivate,
-            webExtensionMenuCount = webExtensionMenuCount,
-            allWebExtensionsDisabled = allWebExtensionsDisabled,
-            onExtensionsMenuClick = onExtensionsMenuClick,
-            extensionSubmenu = extensionSubmenu,
+    Column {
+        // 使用与其他图标行完全相同的高度和padding
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)  // 使用固定高度，与MenuItem相同
+                .padding(horizontal = 8.dp, vertical = 0.dp)  // 去掉vertical padding
+                .clip(shape = RoundedCornerShape(4.dp))
+                .background(color = FirefoxTheme.colors.layer3)
+                .clickable { onExtensionsMenuClick() }
+                .padding(horizontal = 16.dp, vertical = 0.dp),  // 去掉内部vertical padding
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    painter = if (isExtensionsProcessDisabled && isPrivate) {
+                        painterResource(id = R.drawable.mozac_ic_extension_warning_private_24)
+                    } else if (isExtensionsProcessDisabled) {
+                        painterResource(id = R.drawable.mozac_ic_extension_warning_24)
+                    } else {
+                        painterResource(id = R.drawable.mozac_ic_extension_24)
+                    },
+                    contentDescription = null,
+                    tint = if (isExtensionsProcessDisabled) {
+                        FirefoxTheme.colors.iconCritical
+                    } else {
+                        FirefoxTheme.colors.iconSecondary
+                    },
+                )
+                
+                Text(
+                    text = stringResource(id = R.string.browser_menu_extensions),
+                    color = FirefoxTheme.colors.textPrimary,
+                    style = FirefoxTheme.typography.subtitle1,
+                    maxLines = 1,
+                )
+            }
+            
+            // 扩展数量和展开/收起指示器
+            if (!isExtensionsProcessDisabled && !allWebExtensionsDisabled) {
+                Row(
+                    modifier = Modifier
+                        .background(
+                            color = FirefoxTheme.colors.layerSearch,
+                            shape = RoundedCornerShape(16.dp),
+                        )
+                        .padding(horizontal = 8.dp, vertical = 2.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (webExtensionMenuCount > 0) {
+                        Text(
+                            text = webExtensionMenuCount.toString(),
+                            color = FirefoxTheme.colors.textPrimary,
+                            style = FirefoxTheme.typography.caption,
+                            maxLines = 1,
+                        )
+                    }
+                    Icon(
+                        painter = if (isExtensionsExpanded) {
+                            painterResource(id = R.drawable.mozac_ic_chevron_up_20)
+                        } else {
+                            painterResource(id = R.drawable.mozac_ic_chevron_down_20)
+                        },
+                        contentDescription = null,
+                        tint = FirefoxTheme.colors.iconPrimary,
+                    )
+                }
+            } else if (isExtensionsProcessDisabled) {
+                Icon(
+                    painter = painterResource(id = R.drawable.mozac_ic_settings_24),
+                    contentDescription = null,
+                    tint = FirefoxTheme.colors.iconPrimary,
+                )
+            }
+        }
+
+        // 扩展子菜单动画
+        MenuItemAnimation(
+            isExpanded = isExtensionsExpanded,
+            submenu = extensionSubmenu,
         )
     }
 }

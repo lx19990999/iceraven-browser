@@ -44,9 +44,9 @@ import org.mozilla.fenix.compose.list.ImageListItem
 import org.mozilla.fenix.compose.list.TextListItem
 import org.mozilla.fenix.theme.FirefoxTheme
 
-private val MENU_ITEM_HEIGHT_WITHOUT_DESC = 52.dp
+private val MENU_ITEM_HEIGHT_WITHOUT_DESC = 40.dp
 
-private val MENU_ITEM_HEIGHT_WITH_DESC = 56.dp
+private val MENU_ITEM_HEIGHT_WITH_DESC = 44.dp
 
 private val BADGE_ROUNDED_CORNER = 100.dp
 

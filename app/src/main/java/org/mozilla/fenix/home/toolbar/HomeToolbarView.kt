@@ -90,6 +90,8 @@ internal class HomeToolbarView(
             TOOLBAR_WRAPPER_INCREASE_HEIGHT_DPS,
         )
 
+        // 搜索选择器已从布局中移除，无需隐藏
+
         updateButtonVisibility(browserState)
     }
 
@@ -133,7 +135,9 @@ internal class HomeToolbarView(
      *
      * @param block Configuration block for the search selector.
      */
-    fun configureSearchSelector(block: SearchSelector.() -> Unit) = block(toolbarBinding.searchSelectorButton)
+    fun configureSearchSelector(block: SearchSelector.() -> Unit) {
+        // 搜索选择器已从布局中移除，此方法为空实现
+    }
 
     /**
      * Updates the background of the toolbar.

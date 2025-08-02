@@ -376,11 +376,26 @@ class BrowserToolbarMiddleware(
     )
 
     private fun buildStartBrowserActions(): List<Action> = buildList {
+        // 添加设置按钮到左侧
         add(
             ActionButton(
-                icon = R.drawable.mozac_ic_home_24,
-                contentDescription = R.string.browser_toolbar_home,
-                onClick = HomeClicked,
+                icon = R.drawable.mozac_ic_ellipsis_vertical_24,
+                contentDescription = R.string.content_description_menu,
+                onClick = MenuClicked,
+            ),
+        )
+        // 添加Tab计数器按钮到左侧
+        val tabsCount = getCurrentNumberOfOpenedTabs()
+        add(
+            TabCounterAction(
+                count = tabsCount,
+                contentDescription = dependencies.context.getString(
+                    R.string.mozac_tab_counter_open_tab_tray,
+                    tabsCount.toString(),
+                ),
+                showPrivacyMask = dependencies.browsingModeManager.mode == Private,
+                onClick = TabCounterClicked,
+                onLongClick = buildTabCounterMenu(),
             ),
         )
         if (dependencies.context.isLargeWindow()) {
@@ -479,23 +494,8 @@ class BrowserToolbarMiddleware(
     }
 
     private fun buildEndBrowserActions(tabsCount: Int): List<Action> =
-        listOf(
-            TabCounterAction(
-                count = tabsCount,
-                contentDescription = dependencies.context.getString(
-                    R.string.mozac_tab_counter_open_tab_tray,
-                    tabsCount.toString(),
-                ),
-                showPrivacyMask = dependencies.browsingModeManager.mode == Private,
-                onClick = TabCounterClicked,
-                onLongClick = buildTabCounterMenu(),
-            ),
-            ActionButton(
-                icon = R.drawable.mozac_ic_ellipsis_vertical_24,
-                contentDescription = R.string.content_description_menu,
-                onClick = MenuClicked,
-            ),
-        )
+        // 右侧不再放置任何按钮，因为都移到了左侧
+        emptyList()
 
     private fun buildTabCounterMenu() = BrowserToolbarMenu {
         listOf(

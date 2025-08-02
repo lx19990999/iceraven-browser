@@ -41,12 +41,13 @@ internal fun MoreSettingsSubmenu(
     Column(
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        if (translationInfo.isTranslationSupported) {
-            TranslationMenuItem(
-                translationInfo = translationInfo,
-                isReaderViewActive = isReaderViewActive,
-            )
-        }
+        // 删除翻译页面菜单项
+        // if (translationInfo.isTranslationSupported) {
+        //     TranslationMenuItem(
+        //         translationInfo = translationInfo,
+        //         isReaderViewActive = isReaderViewActive,
+        //     )
+        // }
 
         if (isWebCompatReporterSupported) {
             MenuItem(
@@ -57,57 +58,63 @@ internal fun MoreSettingsSubmenu(
             )
         }
 
-        ShortcutsMenuItem(
-            isPinned = isPinned,
-            onShortcutsMenuClick = onShortcutsMenuClick,
-        )
+        // 删除添加快捷方式菜单项
+        // ShortcutsMenuItem(
+        //     isPinned = isPinned,
+        //     onShortcutsMenuClick = onShortcutsMenuClick,
+        // )
 
-        MenuItem(
-            label = if (isInstallable) {
-                stringResource(id = R.string.browser_menu_add_app_to_homescreen)
-            } else {
-                stringResource(id = R.string.browser_menu_add_to_homescreen)
-            },
-            beforeIconPainter = painterResource(id = R.drawable.mozac_ic_add_to_homescreen_24),
-            onClick = onAddToHomeScreenMenuClick,
-        )
+        // 删除添加到主屏幕菜单项
+        // MenuItem(
+        //     label = if (isInstallable) {
+        //         stringResource(id = R.string.browser_menu_add_app_to_homescreen)
+        //     } else {
+        //         stringResource(id = R.string.browser_menu_add_to_homescreen)
+        //     },
+        //     beforeIconPainter = painterResource(id = R.drawable.mozac_ic_add_to_homescreen_24),
+        //     onClick = onAddToHomeScreenMenuClick,
+        // )
 
-        MenuItem(
-            label = stringResource(id = R.string.browser_menu_save_to_collection_2),
-            beforeIconPainter = painterResource(id = R.drawable.mozac_ic_collection_24),
-            onClick = onSaveToCollectionMenuClick,
-        )
+        // 删除保存到收藏集菜单项
+        // MenuItem(
+        //     label = stringResource(id = R.string.browser_menu_save_to_collection_2),
+        //     beforeIconPainter = painterResource(id = R.drawable.mozac_ic_collection_24),
+        //     onClick = onSaveToCollectionMenuClick,
+        // )
 
-        if (hasExternalApp) {
-            MenuItem(
-                label = if (externalAppName != "") {
-                    stringResource(id = R.string.browser_menu_open_in_fenix, externalAppName)
-                } else {
-                    stringResource(id = R.string.browser_menu_open_app_link)
-                },
-                beforeIconPainter = painterResource(id = R.drawable.mozac_ic_more_grid_24),
-                state = MenuItemState.ENABLED,
-                onClick = onOpenInAppMenuClick,
-            )
-        } else {
-            MenuItem(
-                label = stringResource(id = R.string.browser_menu_open_app_link),
-                beforeIconPainter = painterResource(id = R.drawable.mozac_ic_more_grid_24),
-                state = MenuItemState.DISABLED,
-            )
-        }
+        // 删除在应用中打开菜单项
+        // if (hasExternalApp) {
+        //     MenuItem(
+        //         label = if (externalAppName != "") {
+        //             stringResource(id = R.string.browser_menu_open_in_fenix, externalAppName)
+        //         } else {
+        //             stringResource(id = R.string.browser_menu_open_app_link)
+        //         },
+        //         beforeIconPainter = painterResource(id = R.drawable.mozac_ic_more_grid_24),
+        //         state = MenuItemState.ENABLED,
+        //         onClick = onOpenInAppMenuClick,
+        //     )
+        // } else {
+        //     MenuItem(
+        //         label = stringResource(id = R.string.browser_menu_open_app_link),
+        //         beforeIconPainter = painterResource(id = R.drawable.mozac_ic_more_grid_24),
+        //         state = MenuItemState.DISABLED,
+        //     )
+        // }
 
-        MenuItem(
-            label = stringResource(id = R.string.browser_menu_save_as_pdf_2),
-            beforeIconPainter = painterResource(id = R.drawable.mozac_ic_save_file_24),
-            onClick = onSaveAsPDFMenuClick,
-        )
+        // 删除另存为PDF菜单项
+        // MenuItem(
+        //     label = stringResource(id = R.string.browser_menu_save_as_pdf_2),
+        //     beforeIconPainter = painterResource(id = R.drawable.mozac_ic_save_file_24),
+        //     onClick = onSaveAsPDFMenuClick,
+        // )
 
-        MenuItem(
-            label = stringResource(id = R.string.browser_menu_print_2),
-            beforeIconPainter = painterResource(id = R.drawable.mozac_ic_print_24),
-            onClick = onPrintMenuClick,
-        )
+        // 删除打印菜单项
+        // MenuItem(
+        //     label = stringResource(id = R.string.browser_menu_print_2),
+        //     beforeIconPainter = painterResource(id = R.drawable.mozac_ic_print_24),
+        //     onClick = onPrintMenuClick,
+        // )
     }
 }
 

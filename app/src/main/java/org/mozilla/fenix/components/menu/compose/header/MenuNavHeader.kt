@@ -139,7 +139,7 @@ private fun MenuNavItem(
 ) {
     Column(
         modifier = Modifier
-            .width(64.dp)
+            .width(40.dp)
             .fillMaxHeight()
             .combinedClickable(
                 interactionSource = null,
@@ -148,28 +148,29 @@ private fun MenuNavItem(
                 onClick = onClick,
                 onLongClick = onLongClick,
             ),
-        verticalArrangement = Arrangement.Top,
+        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(
             painter = painter,
-            contentDescription = null,
+            contentDescription = label,
             tint = getIconTint(state = state),
         )
 
-        Spacer(modifier = Modifier.height(4.dp))
+        // 删除间距，因为不需要文字了
+        // Spacer(modifier = Modifier.height(4.dp))
 
-        Text(
-            text = label,
-            style = FirefoxTheme.typography.caption.merge(
-                platformStyle = PlatformTextStyle(includeFontPadding = true),
-            ).copy(hyphens = Hyphens.Auto),
-            color = getLabelTextColor(state = state),
-            maxLines = 2,
-            softWrap = true,
-            textAlign = TextAlign.Center,
-
-        )
+        // 删除文字标签，只保留图标
+        // Text(
+        //     text = label,
+        //     style = FirefoxTheme.typography.caption.merge(
+        //         platformStyle = PlatformTextStyle(includeFontPadding = true),
+        //     ).copy(hyphens = Hyphens.Auto),
+        //     color = getLabelTextColor(state = state),
+        //     maxLines = 2,
+        //     softWrap = true,
+        //     textAlign = TextAlign.Center,
+        // )
     }
 }
 

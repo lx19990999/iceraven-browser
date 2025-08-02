@@ -57,26 +57,27 @@ fun LibraryMenuItem(
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 16.dp),
         ) {
             Icon(
                 painter = painterResource(iconRes),
                 contentDescription = stringResource(labelRes),
                 tint = FirefoxTheme.colors.iconPrimary,
             )
-            Spacer(Modifier.height(4.dp))
-            Text(
-                text = stringResource(labelRes),
-                style = FirefoxTheme.typography.caption.copy(
-                    hyphens = Hyphens.Auto,
-                ),
-                modifier = Modifier
-                    .fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                maxLines = 2,
-                softWrap = true,
-                color = FirefoxTheme.colors.textPrimary,
-            )
+            // 删除文字标签，只保留图标
+            // Spacer(Modifier.height(4.dp))
+            // Text(
+            //     text = stringResource(labelRes),
+            //     style = FirefoxTheme.typography.caption.copy(
+            //         hyphens = Hyphens.Auto,
+            //     ),
+            //     modifier = Modifier
+            //         .fillMaxWidth(),
+            //     textAlign = TextAlign.Center,
+            //     maxLines = 2,
+            //     softWrap = true,
+            //     color = FirefoxTheme.colors.textPrimary,
+            // )
         }
     }
 }

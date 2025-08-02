@@ -353,11 +353,9 @@ class BrowserFragment : BaseBrowserFragment(), UserInteractionHandler {
         context: Context,
         isTablet: Boolean,
     ) {
-        if (context.settings().shouldShowHomeButton) {
-            addHomeAction(context = context)
-        } else {
-            (_browserToolbarView as? BrowserToolbarView)?.toolbar?.setPadding(8.dpToPx(resources.displayMetrics), 0, 0, 0)
-        }
+        // 不再添加主页按钮，因为我们要移除它
+        // 设置左侧填充
+        (_browserToolbarView as? BrowserToolbarView)?.toolbar?.setPadding(8.dpToPx(resources.displayMetrics), 0, 0, 0)
         updateTabletToolbarActions(isTablet = isTablet)
         (browserToolbarView as? BrowserToolbarView)?.toolbar?.invalidateActions()
     }

@@ -853,44 +853,15 @@ class SearchDialogFragment : AppCompatDialogFragment(), UserInteractionHandler {
     }
 
     private fun addSearchSelector() {
-        if (searchSelectorAlreadyAdded) return
-
-        toolbarView.view.addEditActionStart(
-            SearchSelectorToolbarAction(
-                store = store,
-                defaultSearchEngine = requireComponents.core.store.state.search.selectedOrDefaultSearchEngine,
-                menu = searchSelectorMenu,
-            ),
-        )
-
+        // 不添加搜索选择器，保持方法为空
         searchSelectorAlreadyAdded = true
     }
 
     private fun updateVoiceSearchButton() {
-        when (isSpeechAvailable() && requireContext().settings().shouldShowVoiceSearch) {
-            true -> {
-                if (voiceSearchButtonAction == null) {
-                    voiceSearchButtonAction = IncreasedTapAreaActionDecorator(
-                        BrowserToolbar.Button(
-                            AppCompatResources.getDrawable(requireContext(), R.drawable.ic_microphone)!!,
-                            requireContext().getString(R.string.voice_search_content_description),
-                            visible = { true },
-                            listener = ::launchVoiceSearch,
-                        ),
-                    ).also { action ->
-                        toolbarView.view.run {
-                            addEditActionEnd(action)
-                            invalidateActions()
-                        }
-                    }
-                }
-            }
-            false -> {
-                voiceSearchButtonAction?.let { action ->
-                    toolbarView.view.removeEditActionEnd(action)
-                    voiceSearchButtonAction = null
-                }
-            }
+        // 不添加语音搜索按钮，如果已经添加了则移除它
+        voiceSearchButtonAction?.let { action ->
+            toolbarView.view.removeEditActionEnd(action)
+            voiceSearchButtonAction = null
         }
     }
 

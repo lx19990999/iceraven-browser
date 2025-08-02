@@ -126,6 +126,21 @@ class MenuDialogFragment : BottomSheetDialogFragment() {
         Events.toolbarMenuVisible.record(NoExtras())
 
         return super.onCreateDialog(savedInstanceState).apply {
+            // 设置菜单左对齐
+            window?.attributes?.let { params ->
+                params.gravity = android.view.Gravity.START or android.view.Gravity.BOTTOM
+                params.horizontalMargin = 0f
+                params.verticalMargin = 0f
+                params.x = 0  // 强制设置X坐标为0
+                params.y = 0  // 强制设置Y坐标为0
+                window?.attributes = params
+            }
+            
+            // 设置窗口布局参数
+            window?.setLayout(
+                android.view.WindowManager.LayoutParams.WRAP_CONTENT,
+                android.view.WindowManager.LayoutParams.WRAP_CONTENT
+            )
             setOnShowListener {
                 val safeActivity = activity ?: return@setOnShowListener
                 val browsingModeManager = (safeActivity as HomeActivity).browsingModeManager
@@ -161,6 +176,16 @@ class MenuDialogFragment : BottomSheetDialogFragment() {
                         skipCollapsed = true
                         state = BottomSheetBehavior.STATE_EXPANDED
                         hideFriction = HIDING_FRICTION
+                    }
+                }
+                
+                // 强制设置底部表单的布局参数以确保左对齐
+                bottomSheet?.layoutParams?.let { params ->
+                    if (params is android.widget.FrameLayout.LayoutParams) {
+                        params.gravity = android.view.Gravity.START or android.view.Gravity.BOTTOM
+                        params.leftMargin = 0
+                        params.rightMargin = 0
+                        bottomSheet.layoutParams = params
                     }
                 }
             }

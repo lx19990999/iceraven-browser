@@ -55,12 +55,12 @@ internal fun MenuScaffold(
             modifier = Modifier
                 .verticalScroll(scrollState)
                 .padding(
-                    start = 16.dp,
-                    top = 12.dp,
-                    end = 16.dp,
-                    bottom = 32.dp,
+                    start = 8.dp,
+                    top = 8.dp,
+                    end = 8.dp,
+                    bottom = 16.dp,
                 ),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             content()
         }
@@ -93,10 +93,10 @@ internal fun MenuFrame(
             modifier = Modifier
                 .verticalScroll(scrollState)
                 .padding(
-                    start = 8.dp,
-                    top = 8.dp,
-                    end = 8.dp,
-                    bottom = 12.dp,
+                    start = 4.dp,
+                    top = 4.dp,
+                    end = 4.dp,
+                    bottom = 8.dp,
                 ),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {

@@ -163,21 +163,7 @@ fun ListItemTabSurface(
             modifier = Modifier.padding(contentPadding),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            val (imageWidth, imageHeight) = 116.dp to 84.dp
-            val imageModifier = Modifier
-                .size(imageWidth, imageHeight)
-                .clip(RoundedCornerShape(8.dp))
-
-            Image(
-                url = imageUrl,
-                modifier = imageModifier,
-                private = false,
-                targetSize = imageWidth,
-                contentScale = imageContentScale,
-            )
-
-            Spacer(Modifier.width(16.dp))
-
+            // 移除了网页预览图，直接显示标签详情
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.SpaceBetween,

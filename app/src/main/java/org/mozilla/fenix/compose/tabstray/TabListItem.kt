@@ -226,15 +226,28 @@ private fun TabContent(
             },
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Thumbnail(
-            tab = tab,
-            size = thumbnailSize,
-            multiSelectionEnabled = multiSelectionEnabled,
-            isSelected = multiSelectionSelected,
-            onMediaIconClicked = { onMediaClick(it) },
-            interactionSource = interactionSource,
-        )
+        // 关闭按钮移到最左侧
+        if (!multiSelectionEnabled) {
+            IconButton(
+                onClick = { onCloseClick(tab) },
+                modifier = Modifier
+                    .size(size = 48.dp)
+                    .testTag(TabsTrayTestTag.TAB_ITEM_CLOSE),
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.mozac_ic_cross_24),
+                    contentDescription = stringResource(
+                        id = R.string.close_tab_title,
+                        tab.toDisplayTitle(),
+                    ),
+                    tint = FirefoxTheme.colors.iconPrimary,
+                )
+            }
+        } else {
+            Spacer(modifier = Modifier.size(48.dp))
+        }
 
+        // 移除了网页预览图，直接显示标题和URL
         Column(
             modifier = Modifier
                 .padding(start = 12.dp)
@@ -255,26 +268,6 @@ private fun TabContent(
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
             )
-        }
-
-        if (!multiSelectionEnabled) {
-            IconButton(
-                onClick = { onCloseClick(tab) },
-                modifier = Modifier
-                    .size(size = 48.dp)
-                    .testTag(TabsTrayTestTag.TAB_ITEM_CLOSE),
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.mozac_ic_cross_24),
-                    contentDescription = stringResource(
-                        id = R.string.close_tab_title,
-                        tab.toDisplayTitle(),
-                    ),
-                    tint = FirefoxTheme.colors.iconPrimary,
-                )
-            }
-        } else {
-            Spacer(modifier = Modifier.size(48.dp))
         }
     }
 }

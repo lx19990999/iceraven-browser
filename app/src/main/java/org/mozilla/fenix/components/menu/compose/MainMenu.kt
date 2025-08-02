@@ -241,35 +241,37 @@ fun MainMenu(
             )
         }
 
+        // 第二行：合并的图标行，包含所有操作按钮
         if (accessPoint == MenuAccessPoint.Browser) {
-            ToolsAndActionsMenuGroup(
+            CombinedIconsRow(
                 isBookmarked = isBookmarked,
-                isDesktopMode = isDesktopMode,
-                isPdf = isPdf,
-                isPrivate = isPrivate,
+                onBookmarkClick = if (isBookmarked) onEditBookmarkButtonClick else onBookmarkPageMenuClick,
+                onFindInPageClick = onFindInPageMenuClick,
+                onBookmarksMenuClick = onBookmarksMenuClick,
+                onPasswordsMenuClick = onPasswordsMenuClick,
+            )
+        } else {
+            LibraryMenuGroup(
+                onBookmarksMenuClick = onBookmarksMenuClick,
+                onHistoryMenuClick = onHistoryMenuClick,
+                onDownloadsMenuClick = onDownloadsMenuClick,
+                onPasswordsMenuClick = onPasswordsMenuClick,
+            )
+        }
+
+        // 第三行：扩展菜单项
+        if (accessPoint == MenuAccessPoint.Browser) {
+            ExtensionsRow(
                 extensionsMenuItemDescription = extensionsMenuItemDescription,
                 isExtensionsProcessDisabled = isExtensionsProcessDisabled,
                 isExtensionsExpanded = isExtensionsExpanded,
-                moreMenuExpanded = isMoreMenuExpanded,
+                isPrivate = isPrivate,
                 webExtensionMenuCount = webExtensionMenuCount,
                 allWebExtensionsDisabled = allWebExtensionsDisabled,
                 onExtensionsMenuClick = onExtensionsMenuClick,
-                onBookmarkPageMenuClick = onBookmarkPageMenuClick,
-                onEditBookmarkButtonClick = onEditBookmarkButtonClick,
-                onSwitchToDesktopSiteMenuClick = onSwitchToDesktopSiteMenuClick,
-                onFindInPageMenuClick = onFindInPageMenuClick,
-                onMoreMenuClick = onMoreMenuClick,
-                moreSettingsSubmenu = moreSettingsSubmenu,
                 extensionSubmenu = extensionSubmenu,
-                )
+            )
         }
-
-        LibraryMenuGroup(
-            onBookmarksMenuClick = onBookmarksMenuClick,
-            onHistoryMenuClick = onHistoryMenuClick,
-            onDownloadsMenuClick = onDownloadsMenuClick,
-            onPasswordsMenuClick = onPasswordsMenuClick,
-        )
 
         MenuGroup {
             MozillaAccountMenuItem(
@@ -311,7 +313,8 @@ private fun ExtensionsMenuItem(
         val leftPadding = if (webExtensionMenuCount > 0) 8.dp else 2.dp
         MenuItem(
             label = stringResource(id = R.string.browser_menu_extensions),
-            description = extensionsMenuItemDescription,
+            // 删除副标题
+            // description = extensionsMenuItemDescription,
             beforeIconPainter = if (isExtensionsProcessDisabled && isPrivate) {
                 painterResource(id = R.drawable.mozac_ic_extension_warning_private_24)
             } else if (isExtensionsProcessDisabled) {
@@ -320,11 +323,12 @@ private fun ExtensionsMenuItem(
                 painterResource(id = R.drawable.mozac_ic_extension_24)
             },
             onClick = onExtensionsMenuClick,
-            descriptionState = if (isExtensionsProcessDisabled) {
-                MenuItemState.WARNING
-            } else {
-                MenuItemState.ENABLED
-            },
+            // 删除副标题状态
+            // descriptionState = if (isExtensionsProcessDisabled) {
+            //     MenuItemState.WARNING
+            // } else {
+            //     MenuItemState.ENABLED
+            // },
             modifier = Modifier.semantics {
                 testTag = EXTENSIONS
                 testTagsAsResourceId = true
@@ -461,79 +465,35 @@ private fun ToolsAndActionsMenuGroup(
     extensionSubmenu: @Composable ColumnScope.() -> Unit,
     ) {
     MenuGroup {
-        val labelId = R.string.browser_menu_desktop_site
-        val badgeText: String
-        val menuItemState: MenuItemState
-        val badgeBackgroundColor: Color
+        // 删除桌面版网站相关的变量定义
+        // val labelId = R.string.browser_menu_desktop_site
+        // val badgeText: String
+        // val menuItemState: MenuItemState
+        // val badgeBackgroundColor: Color
 
-        if (isDesktopMode) {
-            badgeText = stringResource(id = R.string.browser_feature_desktop_site_on)
-            badgeBackgroundColor = FirefoxTheme.colors.badgeActive
-            menuItemState = MenuItemState.ACTIVE
-        } else {
-            badgeText = stringResource(id = R.string.browser_feature_desktop_site_off)
-            badgeBackgroundColor = FirefoxTheme.colors.layerSearch
-            menuItemState = if (isPdf) MenuItemState.DISABLED else MenuItemState.ENABLED
-        }
+        // if (isDesktopMode) {
+        //     badgeText = stringResource(id = R.string.browser_feature_desktop_site_on)
+        //     badgeBackgroundColor = FirefoxTheme.colors.badgeActive
+        //     menuItemState = MenuItemState.ACTIVE
+        // } else {
+        //     badgeText = stringResource(id = R.string.browser_feature_desktop_site_off)
+        //     badgeBackgroundColor = FirefoxTheme.colors.layerSearch
+        //     menuItemState = if (isPdf) MenuItemState.DISABLED else MenuItemState.ENABLED
+        // }
 
-        if (isBookmarked) {
-                MenuItem(
-                    label = stringResource(id = R.string.browser_menu_edit_bookmark),
-                    beforeIconPainter = painterResource(id = R.drawable.mozac_ic_bookmark_fill_24),
-                    state = MenuItemState.ACTIVE,
-                    onClick = onEditBookmarkButtonClick,
-                )
-            } else {
-                MenuItem(
-                    label = stringResource(id = R.string.browser_menu_bookmark_this_page_2),
-                    beforeIconPainter = painterResource(id = R.drawable.mozac_ic_bookmark_24),
-                    onClick = onBookmarkPageMenuClick,
-                )
-            }
+        // 书签和查找功能已移至CombinedIconsRow
+        // 扩展功能已移至ExtensionsRow
 
-            MenuItem(
-                label = stringResource(id = labelId),
-                beforeIconPainter = painterResource(id = R.drawable.mozac_ic_device_mobile_24),
-                state = menuItemState,
-                onClick = onSwitchToDesktopSiteMenuClick,
-            ) {
-            if (menuItemState == MenuItemState.DISABLED) {
-                return@MenuItem
-            }
+        // 删除更多菜单按钮和子菜单
+        // MoreMenuButtonGroup(
+        //     moreMenuExpanded = moreMenuExpanded,
+        //     onMoreMenuClick = onMoreMenuClick,
+        // )
 
-            Badge(
-                badgeText = badgeText,
-                state = menuItemState,
-                badgeBackgroundColor = badgeBackgroundColor,
-            )
-        }
-
-        MenuItem(
-            label = stringResource(id = R.string.browser_menu_find_in_page),
-            beforeIconPainter = painterResource(id = R.drawable.mozac_ic_search_24),
-            onClick = onFindInPageMenuClick,
-        )
-
-        ExtensionsMenuItem(
-            extensionsMenuItemDescription = extensionsMenuItemDescription,
-            isExtensionsProcessDisabled = isExtensionsProcessDisabled,
-            isExtensionsExpanded = isExtensionsExpanded,
-            isPrivate = isPrivate,
-            webExtensionMenuCount = webExtensionMenuCount,
-            allWebExtensionsDisabled = allWebExtensionsDisabled,
-            onExtensionsMenuClick = onExtensionsMenuClick,
-            extensionSubmenu = extensionSubmenu,
-        )
-
-        MoreMenuButtonGroup(
-            moreMenuExpanded = moreMenuExpanded,
-            onMoreMenuClick = onMoreMenuClick,
-        )
-
-        MenuItemAnimation(
-            isExpanded = moreMenuExpanded,
-            submenu = moreSettingsSubmenu,
-        )
+        // MenuItemAnimation(
+        //     isExpanded = moreMenuExpanded,
+        //     submenu = moreSettingsSubmenu,
+        // )
     }
 }
 
@@ -575,6 +535,125 @@ private fun MoreMenuButtonGroup(
 }
 
 @Composable
+private fun CombinedIconsRow(
+    isBookmarked: Boolean,
+    onBookmarkClick: () -> Unit,
+    onFindInPageClick: () -> Unit,
+    onBookmarksMenuClick: () -> Unit,
+    onPasswordsMenuClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+            .padding(horizontal = 8.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        // 书签操作按钮
+        Column(
+            modifier = Modifier
+                .width(40.dp)
+                .fillMaxHeight()
+                .clickable { onBookmarkClick() },
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Icon(
+                painter = if (isBookmarked) {
+                    painterResource(id = R.drawable.mozac_ic_bookmark_fill_24)
+                } else {
+                    painterResource(id = R.drawable.mozac_ic_bookmark_24)
+                },
+                contentDescription = if (isBookmarked) {
+                    stringResource(id = R.string.browser_menu_edit_bookmark)
+                } else {
+                    stringResource(id = R.string.browser_menu_bookmark_this_page_2)
+                },
+                tint = if (isBookmarked) {
+                    FirefoxTheme.colors.iconAccentViolet
+                } else {
+                    FirefoxTheme.colors.iconSecondary
+                },
+            )
+        }
+
+        // 查找按钮
+        Column(
+            modifier = Modifier
+                .width(40.dp)
+                .fillMaxHeight()
+                .clickable { onFindInPageClick() },
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.mozac_ic_search_24),
+                contentDescription = stringResource(id = R.string.browser_menu_find_in_page),
+                tint = FirefoxTheme.colors.iconSecondary,
+            )
+        }
+
+        // 书签列表按钮
+        Column(
+            modifier = Modifier
+                .width(40.dp)
+                .fillMaxHeight()
+                .clickable { onBookmarksMenuClick() },
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.mozac_ic_bookmark_tray_fill_24),
+                contentDescription = stringResource(id = R.string.library_bookmarks),
+                tint = FirefoxTheme.colors.iconSecondary,
+            )
+        }
+
+        // 密码按钮
+        Column(
+            modifier = Modifier
+                .width(40.dp)
+                .fillMaxHeight()
+                .clickable { onPasswordsMenuClick() },
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.mozac_ic_login_24),
+                contentDescription = stringResource(id = R.string.browser_menu_passwords),
+                tint = FirefoxTheme.colors.iconSecondary,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ExtensionsRow(
+    extensionsMenuItemDescription: String,
+    isExtensionsProcessDisabled: Boolean,
+    isExtensionsExpanded: Boolean,
+    isPrivate: Boolean,
+    webExtensionMenuCount: Int,
+    allWebExtensionsDisabled: Boolean,
+    onExtensionsMenuClick: () -> Unit,
+    extensionSubmenu: @Composable ColumnScope.() -> Unit,
+) {
+    MenuGroup {
+        ExtensionsMenuItem(
+            extensionsMenuItemDescription = extensionsMenuItemDescription,
+            isExtensionsProcessDisabled = isExtensionsProcessDisabled,
+            isExtensionsExpanded = isExtensionsExpanded,
+            isPrivate = isPrivate,
+            webExtensionMenuCount = webExtensionMenuCount,
+            allWebExtensionsDisabled = allWebExtensionsDisabled,
+            onExtensionsMenuClick = onExtensionsMenuClick,
+            extensionSubmenu = extensionSubmenu,
+        )
+    }
+}
+
+@Composable
 private fun LibraryMenuGroup(
     onBookmarksMenuClick: () -> Unit,
     onHistoryMenuClick: () -> Unit,
@@ -602,17 +681,18 @@ private fun LibraryMenuGroup(
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        LibraryMenuItem(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight(),
-            iconRes = R.drawable.mozac_ic_history_24,
-            labelRes = R.string.library_history,
-            shape = leftShape,
-            onClick = onHistoryMenuClick,
-        )
+        // 删除历史菜单项
+        // LibraryMenuItem(
+        //     modifier = Modifier
+        //         .weight(1f)
+        //         .fillMaxHeight(),
+        //     iconRes = R.drawable.mozac_ic_history_24,
+        //     labelRes = R.string.library_history,
+        //     shape = leftShape,
+        //     onClick = onHistoryMenuClick,
+        // )
 
-        Spacer(Modifier.width(spacerWidth))
+        // Spacer(Modifier.width(spacerWidth))
 
         LibraryMenuItem(
             modifier = Modifier
@@ -620,23 +700,24 @@ private fun LibraryMenuGroup(
                 .fillMaxHeight(),
             iconRes = R.drawable.mozac_ic_bookmark_tray_fill_24,
             labelRes = R.string.library_bookmarks,
-            shape = middleShape,
+            shape = leftShape,
             onClick = onBookmarksMenuClick,
         )
 
         Spacer(Modifier.width(spacerWidth))
 
-        LibraryMenuItem(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight(),
-            iconRes = R.drawable.mozac_ic_download_24,
-            labelRes = R.string.library_downloads,
-            shape = middleShape,
-            onClick = onDownloadsMenuClick,
-        )
+        // 删除下载菜单项
+        // LibraryMenuItem(
+        //     modifier = Modifier
+        //         .weight(1f)
+        //         .fillMaxHeight(),
+        //     iconRes = R.drawable.mozac_ic_download_24,
+        //     labelRes = R.string.library_downloads,
+        //     shape = middleShape,
+        //     onClick = onDownloadsMenuClick,
+        // )
 
-        Spacer(Modifier.width(spacerWidth))
+        // Spacer(Modifier.width(spacerWidth))
 
         LibraryMenuItem(
             modifier = Modifier
@@ -735,17 +816,19 @@ internal fun MozillaAccountMenuItem(
         } else {
             painterResource(id = R.drawable.mozac_ic_avatar_circle_24)
         },
-        description = description,
+        // 删除副标题
+        // description = description,
         state = if (accountState is AuthenticationProblem) {
             MenuItemState.CRITICAL
         } else {
             MenuItemState.ENABLED
         },
-        descriptionState = if (accountState is AuthenticationProblem) {
-            MenuItemState.WARNING
-        } else {
-            MenuItemState.ENABLED
-        },
+        // 删除副标题状态
+        // descriptionState = if (accountState is AuthenticationProblem) {
+        //     MenuItemState.WARNING
+        // } else {
+        //     MenuItemState.ENABLED
+        // },
         onClick = onClick,
     )
 }

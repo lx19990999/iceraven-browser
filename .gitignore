@@ -105,3 +105,6 @@ test_artifacts/
 
 # Web extensions: manifest.json files are generated
 manifest.json
+
+# Scripts folder for temporary scripts
+scripts/

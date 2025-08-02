@@ -197,7 +197,7 @@ open class DefaultToolbarMenu(
     @VisibleForTesting
     internal val newTabItem = BrowserMenuImageText(
         context.getString(R.string.library_new_tab),
-        R.drawable.ic_new,
+        0, // 不显示图标
         primaryTextColor(),
     ) {
         onItemTapped.invoke(ToolbarMenu.Item.NewTab)
@@ -221,7 +221,7 @@ open class DefaultToolbarMenu(
 
     private val passwordsItem = BrowserMenuImageText(
         context.getString(R.string.preferences_sync_logins_2),
-        R.drawable.mozac_ic_login_24,
+        0, // 不显示图标
         primaryTextColor(),
     ) {
         onItemTapped.invoke(ToolbarMenu.Item.Passwords)
@@ -233,7 +233,7 @@ open class DefaultToolbarMenu(
 
     private val findInPageItem = BrowserMenuImageText(
         label = context.getString(R.string.browser_menu_find_in_page),
-        imageResource = R.drawable.mozac_ic_search_24,
+        imageResource = 0, // 不显示图标
         iconTintColorResource = primaryTextColor(),
     ) {
         onItemTapped.invoke(ToolbarMenu.Item.FindInPage)
@@ -338,31 +338,16 @@ open class DefaultToolbarMenu(
     // }
 
     @VisibleForTesting
-    internal val settingsItem = BrowserMenuHighlightableItem(
+    internal val settingsItem = BrowserMenuImageText(
         label = context.getString(R.string.browser_menu_settings),
-        startImageResource = R.drawable.mozac_ic_settings_24,
-        iconTintColorResource = if (hasAccountProblem) {
-            ThemeManager.resolveAttribute(R.attr.syncDisconnected, context)
-        } else {
-            primaryTextColor()
-        },
-        textColorResource = if (hasAccountProblem) {
-            ThemeManager.resolveAttribute(R.attr.textPrimary, context)
-        } else {
-            primaryTextColor()
-        },
-        highlight = BrowserMenuHighlight.HighPriority(
-            endImageResource = R.drawable.ic_sync_disconnected,
-            backgroundTint = context.getColorFromAttr(R.attr.syncDisconnectedBackground),
-            canPropagate = false,
-        ),
-        isHighlighted = { hasAccountProblem },
+        imageResource = 0, // 不显示图标
+        iconTintColorResource = primaryTextColor(),
     ) {
         onItemTapped.invoke(ToolbarMenu.Item.Settings)
     }
 
     private val bookmarksItem = BrowserMenuImageTextCheckboxButton(
-        imageResource = R.drawable.ic_bookmarks_menu,
+        imageResource = 0, // 不显示图标
         iconTintColorResource = primaryTextColor(),
         label = context.getString(R.string.library_bookmarks),
         labelListener = {

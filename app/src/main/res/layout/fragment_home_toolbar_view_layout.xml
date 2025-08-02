@@ -33,23 +33,17 @@
         android:id="@+id/toolbar_wrapper"
         android:layout_width="0dp"
         android:layout_height="40dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="0dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginEnd="8dp"
         android:background="@drawable/home_search_background"
         android:clickable="true"
         android:contentDescription="@string/search_hint"
         android:focusable="true"
         app:layout_constraintBottom_toBottomOf="@id/toolbar"
-        app:layout_constraintEnd_toStartOf="@+id/accessory_button_barrier"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/left_button_barrier"
         app:layout_constraintTop_toTopOf="@id/toolbar">
 
-        <org.mozilla.fenix.search.toolbar.SearchSelector
-            android:id="@+id/search_selector_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="start|center_vertical"
-            android:background="?selectableItemBackgroundBorderless" />
 
         <TextView
             android:id="@+id/toolbar_text"
@@ -66,13 +60,17 @@
             android:textSize="15sp" />
     </LinearLayout>
 
-    <androidx.constraintlayout.widget.Barrier
-        android:id="@+id/accessory_button_barrier"
+    <!-- 菜单按钮移到最左侧 -->
+    <mozilla.components.browser.menu.view.MenuButton
+        android:id="@+id/menuButton"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:barrierDirection="start"
-        app:constraint_referenced_ids="tab_button" />
+        android:layout_height="48dp"
+        android:layout_marginStart="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/toolbar"
+        app:layout_constraintBottom_toBottomOf="@id/toolbar" />
 
+    <!-- 标签计数器移到菜单按钮右侧 -->
     <mozilla.components.ui.tabcounter.TabCounterView
         android:id="@+id/tab_button"
         android:layout_width="48dp"
@@ -80,16 +78,15 @@
         android:clipChildren="false"
         app:layout_constraintTop_toTopOf="@id/toolbar"
         app:layout_constraintBottom_toBottomOf="@id/toolbar"
-        app:layout_constraintEnd_toStartOf="@+id/menuButton" />
+        app:layout_constraintStart_toEndOf="@+id/menuButton" />
 
-    <mozilla.components.browser.menu.view.MenuButton
-        android:id="@+id/menuButton"
+    <!-- 左侧按钮的屏障，用于搜索框定位 -->
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/left_button_barrier"
         android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:layout_marginEnd="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/toolbar"
-        app:layout_constraintBottom_toBottomOf="@id/toolbar"/>
+        android:layout_height="wrap_content"
+        app:barrierDirection="end"
+        app:constraint_referenced_ids="tab_button" />
 
     <View
         android:id="@+id/toolbar_divider"

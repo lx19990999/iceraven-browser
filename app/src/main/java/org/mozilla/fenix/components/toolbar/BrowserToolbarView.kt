@@ -138,6 +138,12 @@ class BrowserToolbarView(
                     }
 
                 display.hint = context.getString(R.string.search_hint)
+                
+                // 强制禁用安全指示器
+                display.indicators = listOf(
+                    DisplayToolbar.Indicators.EMPTY,
+                    DisplayToolbar.Indicators.HIGHLIGHT,
+                )
             }
 
             menuToolbar = ToolbarMenuBuilder(

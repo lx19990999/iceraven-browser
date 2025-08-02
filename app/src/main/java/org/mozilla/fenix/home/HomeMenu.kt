@@ -209,17 +209,17 @@ class HomeMenu(
 
         val menuItems = listOfNotNull(
             bookmarksItem,
-            historyItem,
-            downloadsItem,
+            // historyItem, // 移除历史
+            // downloadsItem, // 移除下载
             passwordsItem,
             extensionsItem,
             syncSignInMenuItem,
             accountAuthItem,
             BrowserMenuDivider(),
             BrowserMenuDivider(),
-            whatsNewItem,
-            helpItem,
-            customizeHomeItem,
+            // whatsNewItem, // 移除新版变化
+            // helpItem, // 移除帮助
+            // customizeHomeItem, // 移除定制首页
             settingsItem,
             if (settings.shouldDeleteBrowsingDataOnQuit) quitItem else null,
         ).also { items ->

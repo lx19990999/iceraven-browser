@@ -69,15 +69,23 @@ abstract class ToolbarIntegration(
     private val toolbarController = ToolbarBehaviorController(scrollableToolbar, store, customTabId)
 
     init {
-        if (!context.settings().enableMenuRedesign) {
-            toolbar.display.menuBuilder = toolbarMenu.menuBuilder
-        }
+        // 不设置 menuBuilder，这样就不会在右侧显示默认的菜单按钮
+        // if (!context.settings().enableMenuRedesign) {
+        //     toolbar.display.menuBuilder = toolbarMenu.menuBuilder
+        // }
 
         toolbar.private = isPrivate
 
-        if (context.settings().enableMenuRedesign && customTabId == null) {
-            addMenuBrowserAction()
-        }
+        // 强制禁用安全指示器
+        toolbar.display.indicators = listOf(
+            DisplayToolbar.Indicators.EMPTY,
+            DisplayToolbar.Indicators.HIGHLIGHT,
+        )
+
+        // 不使用原来的菜单按钮添加逻辑
+        // if (context.settings().enableMenuRedesign && customTabId == null) {
+        //     addMenuBrowserAction()
+        // }
     }
 
     override fun start() {
@@ -106,7 +114,7 @@ abstract class ToolbarIntegration(
             visible = {
                 context.settings().enableMenuRedesign
             },
-            weight = { Int.MAX_VALUE },
+            weight = { 1 }, // 设置为最小权重，让菜单按钮显示在最左侧
             iconTintColorResource = ThemeManager.resolveAttribute(R.attr.textPrimary, context),
             listener = {
                 val accessPoint = if (customTabId.isNullOrBlank()) {
@@ -119,7 +127,8 @@ abstract class ToolbarIntegration(
             },
         )
 
-        toolbar.addBrowserAction(menuAction)
+        // 将菜单按钮添加到左侧导航区域而不是右侧浏览器区域
+        toolbar.addNavigationAction(menuAction)
     }
 }
 
@@ -130,7 +139,7 @@ class DefaultToolbarIntegration(
     scrollableToolbar: ScrollableToolbar,
     toolbarMenu: ToolbarMenu,
     private val lifecycleOwner: LifecycleOwner,
-    customTabId: String? = null,
+    private val customTabId: String? = null,
     private val isPrivate: Boolean,
     private val interactor: BrowserToolbarInteractor,
 ) : ToolbarIntegration(
@@ -156,10 +165,13 @@ class DefaultToolbarIntegration(
 
     init {
         toolbar.display.indicators = listOf(
-            DisplayToolbar.Indicators.SECURITY,
+            // DisplayToolbar.Indicators.SECURITY, // 隐藏安全指示器（HTTPS锁图标）
             DisplayToolbar.Indicators.EMPTY,
             DisplayToolbar.Indicators.HIGHLIGHT,
         )
+
+        // 强制添加菜单按钮到左侧，无论菜单重设计是否启用
+        addMenuNavigationAction()
 
         if (context.isTabStripEnabled()) {
             addShareBrowserAction()
@@ -192,7 +204,7 @@ class DefaultToolbarIntegration(
             store = store,
             menu = buildTabCounterMenu(),
             visible = { true },
-            weight = { TAB_COUNTER_ACTION_WEIGHT },
+            weight = { 2 }, // 设置为第二小的权重，让标签计数器显示在菜单按钮右侧
         )
 
         val tabCount = if (isPrivate) {
@@ -203,7 +215,8 @@ class DefaultToolbarIntegration(
 
         tabCounterAction.updateCount(tabCount)
 
-        toolbar.addBrowserAction(tabCounterAction)
+        // 将标签计数器也添加到左侧导航区域
+        toolbar.addNavigationAction(tabCounterAction)
     }
 
     private fun addShareBrowserAction() {
@@ -228,6 +241,28 @@ class DefaultToolbarIntegration(
         super.stop()
     }
 
+    private fun addMenuNavigationAction() {
+        val menuAction = BrowserToolbar.Button(
+            imageDrawable = AppCompatResources.getDrawable(
+                context,
+                R.drawable.mozac_ic_ellipsis_vertical_24,
+            )!!,
+            contentDescription = context.getString(R.string.content_description_menu),
+            iconTintColorResource = ThemeManager.resolveAttribute(R.attr.textPrimary, context),
+            listener = {
+                val accessPoint = if (customTabId.isNullOrBlank()) {
+                    MenuAccessPoint.Browser
+                } else {
+                    MenuAccessPoint.External
+                }
+                interactor.onMenuButtonClicked(accessPoint = accessPoint)
+            },
+        )
+
+        // 将菜单按钮添加到左侧导航区域
+        toolbar.addNavigationAction(menuAction)
+    }
+
     private fun buildTabCounterMenu(): TabCounterMenu =
         FenixTabCounterMenu(
             context = context,
@@ -244,7 +279,7 @@ class DefaultToolbarIntegration(
         }
 
     companion object {
-        private const val NEW_TAB_ACTION_WEIGHT = 1
+        private const val NEW_TAB_ACTION_WEIGHT = 3
         private const val TAB_COUNTER_ACTION_WEIGHT = 2
     }
 }

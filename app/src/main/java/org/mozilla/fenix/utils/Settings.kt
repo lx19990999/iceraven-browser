@@ -990,11 +990,11 @@ class Settings(private val appContext: Context) : PreferencesHolder {
             return touchExplorationIsEnabled || switchServiceIsEnabled
         }
 
-    var lastKnownMode: BrowsingMode = BrowsingMode.Normal
+    var lastKnownMode: BrowsingMode = BrowsingMode.Private
         get() {
             val lastKnownModeWasPrivate = preferences.getBoolean(
                 appContext.getPreferenceKey(R.string.pref_key_last_known_mode_private),
-                false,
+                true, // 默认为隐私模式
             )
 
             return if (lastKnownModeWasPrivate) {

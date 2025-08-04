@@ -1123,7 +1123,8 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
             return BrowsingMode.Private
         }
 
-        return BrowsingMode.Normal
+        // 默认启动隐私浏览模式
+        return BrowsingMode.Private
     }
 
     /**

@@ -6,6 +6,7 @@ package org.mozilla.fenix.browser
 
 import android.content.Context
 import android.os.StrictMode
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.VisibleForTesting
@@ -16,9 +17,15 @@ import androidx.navigation.fragment.findNavController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import mozilla.components.lib.state.ext.flowScoped
+import mozilla.components.browser.state.selector.selectedTab
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+
 import mozilla.components.browser.state.selector.findTab
 import mozilla.components.browser.state.state.SessionState
 import mozilla.components.browser.state.state.TabSessionState
+import java.net.URI
 import mozilla.components.browser.thumbnails.BrowserThumbnails
 import mozilla.components.browser.toolbar.BrowserToolbar
 import mozilla.components.concept.engine.permission.SitePermissions
@@ -73,6 +80,10 @@ class BrowserFragment : BaseBrowserFragment(), UserInteractionHandler {
     private var translationsAvailable = false
 
     private var pwaOnboardingObserver: PwaOnboardingObserver? = null
+    
+    // 防止重复刷新的变量
+    private var lastAutoRefreshUrl: String = ""
+    private var lastAutoRefreshTime: Long = 0
 
     @VisibleForTesting
     internal var homeAction: BrowserToolbar.Button? = null
@@ -147,6 +158,9 @@ class BrowserFragment : BaseBrowserFragment(), UserInteractionHandler {
                 view = view,
             )
         }
+        
+        // 初始化页面内容检查功能
+        initPageContentChecker()
     }
 
     private fun initBrowserToolbarViewActions(rootView: View) {
@@ -664,6 +678,139 @@ class BrowserFragment : BaseBrowserFragment(), UserInteractionHandler {
                         message = getString(messageStringRes),
                     ),
                 ).show()
+            }
+        }
+    }
+
+    /**
+     * 初始化页面内容检查功能
+     * 当域名包含3个相同字符且页面内容少于200个字符时自动刷新页面
+     */
+    private fun initPageContentChecker() {
+        requireComponents.core.store.flowScoped(this) { flow ->
+            flow.mapNotNull { state -> state.selectedTab }
+                .distinctUntilChangedBy { tab -> 
+                    // 监听页面加载状态和URL变化
+                    Pair(tab.content.loading, tab.content.url)
+                }
+                .collect { tab ->
+                    // 只在页面加载完成时检查
+                    if (!tab.content.loading && tab.content.url.isNotEmpty()) {
+                        checkPageContentAndRefresh(tab)
+                    }
+                }
+        }
+    }
+
+    /**
+     * 检查页面内容并在满足条件时刷新
+     */
+    private fun checkPageContentAndRefresh(tab: TabSessionState) {
+        lifecycleScope.launch {
+            try {
+                val url = tab.content.url
+                val domain = extractDomain(url)
+                val currentTime = System.currentTimeMillis()
+                
+                Log.d("AutoRefresh", "Checking page: $url, Domain: $domain")
+                
+                // 防止重复刷新：如果是同一个URL且在5秒内已经刷新过，则跳过
+                if (url == lastAutoRefreshUrl && (currentTime - lastAutoRefreshTime) < 1000) {
+                    //Log.d("AutoRefresh", "Skipping refresh - same URL refreshed recently: $url")
+                    return@launch
+                }
+                
+                // 检查域名是否包含3个相同字符
+                if (hasSameCharacters(domain, 3)) {
+                    // 获取页面内容长度
+                    val contentLength = getPageContentLength(tab)
+                    // logcat输出contentLength
+                    //Log.d("AutoRefresh", "Domain: $domain, Title: '${tab.content.title}', ContentLength: $contentLength, URL: ${tab.content.url}")
+                    
+                    // 如果内容少于200个字符，则刷新页面
+                    if (contentLength < 200) {
+                        //Log.d("AutoRefresh", "Triggering auto refresh for $domain (contentLength: $contentLength < 200)")
+                        
+                        // 记录刷新信息，防止重复刷新
+                        lastAutoRefreshUrl = url
+                        lastAutoRefreshTime = currentTime
+                        
+                        withContext(Dispatchers.Main) {
+                            requireComponents.useCases.sessionUseCases.reload.invoke()
+                        }
+                    } else {
+                        //Log.d("AutoRefresh", "No refresh needed for $domain (contentLength: $contentLength >= 200)")
+                    }
+                } else {
+                    //Log.d("AutoRefresh", "Domain $domain does not match criteria (no 3 same characters)")
+                }
+            } catch (e: Exception) {
+                //Log.e("AutoRefresh", "Error in checkPageContentAndRefresh", e)
+            }
+        }
+    }
+
+    /**
+     * 从URL中提取域名，并排除www前缀
+     */
+    private fun extractDomain(url: String): String {
+        return try {
+            val uri = java.net.URI(url)
+            val host = uri.host?.lowercase() ?: ""
+            // 移除www前缀进行检查
+            if (host.startsWith("www.")) {
+                host.substring(4)
+            } else {
+                host
+            }
+        } catch (e: Exception) {
+            ""
+        }
+    }
+
+    /**
+     * 检查字符串是否包含指定数量的相同字符（包括字母和数字）
+     */
+    private fun hasSameCharacters(text: String, count: Int): Boolean {
+        val charCounts = mutableMapOf<Char, Int>()
+        for (char in text) {
+            // 只检查字母和数字字符，忽略点号、连字符等特殊字符
+            if (char.isLetterOrDigit()) {
+                charCounts[char] = charCounts.getOrDefault(char, 0) + 1
+                if (charCounts[char]!! >= count) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    /**
+     * 获取页面内容长度的简化实现
+     * 基于页面标题和URL的长度来估算内容丰富程度
+     */
+    private suspend fun getPageContentLength(tab: TabSessionState): Int {
+        return withContext(Dispatchers.IO) {
+            try {
+                val title = tab.content.title
+                val url = tab.content.url
+                
+                // 使用页面标题和URL长度来估算内容丰富程度
+                // 这是一个简化的方法，避免JavaScript执行的复杂性
+                val titleLength = title.length
+                val urlLength = url.length
+                
+                // 如果标题很短或为空，可能是内容不完整的页面
+                val estimatedLength = when {
+                    title.isEmpty() || title.isBlank() -> 50 // 无标题，可能是加载中或错误页面
+                    titleLength < 10 -> 100 // 标题很短
+                    titleLength < 20 -> 300 // 标题较短
+                    else -> 600 // 标题正常，假设内容丰富
+                }
+                
+                estimatedLength
+            } catch (e: Exception) {
+                500 // 出错时返回大于200的值，避免误触发刷新
             }
         }
     }

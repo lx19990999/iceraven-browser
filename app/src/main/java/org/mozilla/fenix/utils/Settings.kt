@@ -324,12 +324,12 @@ class Settings(private val appContext: Context) : PreferencesHolder {
 
     var openLinksInAPrivateTab by booleanPreference(
         appContext.getPreferenceKey(R.string.pref_key_open_links_in_a_private_tab),
-        default = false,
+        default = true, // 默认在隐私标签页中打开链接
     )
 
     var allowScreenshotsInPrivateMode by booleanPreference(
         appContext.getPreferenceKey(R.string.pref_key_allow_screenshots_in_private_mode),
-        default = false,
+        default = true, // 默认允许隐私模式截图
     )
 
     var privateBrowsingLockedFeatureEnabled by lazyFeatureFlagPreference(
@@ -512,7 +512,7 @@ class Settings(private val appContext: Context) : PreferencesHolder {
 
     var gridTabView by booleanPreference(
         appContext.getPreferenceKey(R.string.pref_key_tab_view_grid),
-        default = true,
+        default = false, // 默认使用列表视图
     )
 
     var manuallyCloseTabs by booleanPreference(
@@ -1018,7 +1018,7 @@ class Settings(private val appContext: Context) : PreferencesHolder {
 
     var shouldDeleteBrowsingDataOnQuit by booleanPreference(
         appContext.getPreferenceKey(R.string.pref_key_delete_browsing_data_on_quit),
-        default = false,
+        default = true, // 默认启用退出时删除浏览数据
     )
 
     var deleteOpenTabs by booleanPreference(
@@ -1150,7 +1150,7 @@ class Settings(private val appContext: Context) : PreferencesHolder {
         }
 
     fun getDeleteDataOnQuit(type: DeleteBrowsingDataOnQuitType): Boolean =
-        preferences.getBoolean(type.getPreferenceKey(appContext), false)
+        preferences.getBoolean(type.getPreferenceKey(appContext), true) // 默认删除所有数据类型
 
     fun setDeleteDataOnQuit(type: DeleteBrowsingDataOnQuitType, value: Boolean) {
         preferences.edit { putBoolean(type.getPreferenceKey(appContext), value) }

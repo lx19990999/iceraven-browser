@@ -1,0 +1,11 @@
+{
+  "extensions": [
+    {
+      "id": "test@example.com",
+      "name": "Test Extension",
+      "filename": "test.xpi",
+      "enabled": true,
+      "description": "测试扩展，用于验证安装流程"
+    }
+  ]
+}

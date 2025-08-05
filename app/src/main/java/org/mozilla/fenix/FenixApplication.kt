@@ -709,6 +709,10 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
                     components.addonUpdater.registerForFutureUpdates(extensions)
                     subscribeForNewAddonsIfNeeded(components.supportedAddonsChecker, extensions)
 
+                    // 安装预装扩展
+                    logger.info("WebExtensions loaded, starting preinstalled extensions installation...")
+                    installPreinstalledExtensions(extensions)
+
                     // Bug 1948634 - Make sure the webcompat-reporter extension is fully uninstalled.
                     // This is added here because we need gecko to load the extension first.
                     //
@@ -1060,6 +1064,273 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
     open fun downloadWallpapers() {
         GlobalScope.launch {
             components.useCases.wallpaperUseCases.initialize()
+        }
+    }
+
+    /**
+     * 安装预装扩展
+     * 从assets/extensions/preinstalled_extensions.json读取配置并顺序安装扩展
+     */
+    private fun installPreinstalledExtensions(installedExtensions: List<WebExtension>) {
+        logger.info("Starting preinstalled extensions installation process...")
+        logger.info("Currently installed extensions: ${installedExtensions.map { "${it.id} (${it.getMetadata()?.name})" }}")
+        
+        try {
+            // 读取预装扩展配置
+            logger.info("Reading preinstalled extensions configuration...")
+            
+            val configJson = assets.open("extensions/preinstalled_extensions.json").bufferedReader().use { it.readText() }
+            val config = org.json.JSONObject(configJson)
+            
+            // 读取安装设置
+            val installSettings = config.optJSONObject("install_settings")
+            val sequentialInstall = installSettings?.optBoolean("sequential_install", true) ?: true
+            val installDelay = installSettings?.optLong("install_delay_ms", 1000) ?: 1000
+            val autoEnable = installSettings?.optBoolean("auto_enable", true) ?: true
+            val silentInstall = installSettings?.optBoolean("silent_install", true) ?: true
+            val allowPrivateMode = installSettings?.optBoolean("allow_private_mode", true) ?: true
+            
+            logger.info("Install settings - Sequential: $sequentialInstall, Delay: ${installDelay}ms, Auto-enable: $autoEnable, Silent: $silentInstall, Private-mode: $allowPrivateMode")
+            
+            val extensionsArray = config.getJSONArray("extensions")
+            logger.info("Found ${extensionsArray.length()} extensions in configuration")
+
+            val alreadyInstalledIds = installedExtensions.map { it.id }.toSet()
+            
+            // 收集需要安装的扩展
+            val extensionsToInstall = mutableListOf<ExtensionInstallInfo>()
+            
+            for (i in 0 until extensionsArray.length()) {
+                val extensionConfig = extensionsArray.getJSONObject(i)
+                val extensionId = extensionConfig.getString("id")
+                val fileName = extensionConfig.getString("filename")
+                val name = extensionConfig.getString("name")
+                val enabled = extensionConfig.optBoolean("enabled", true)
+
+                if (!alreadyInstalledIds.contains(extensionId)) {
+                    try {
+                        // 检查扩展文件是否存在
+                        assets.open("extensions/$fileName").close()
+                        extensionsToInstall.add(ExtensionInstallInfo(extensionId, fileName, name, enabled, allowPrivateMode))
+                        logger.info("Queued for installation: $name ($extensionId)")
+                    } catch (e: Exception) {
+                        logger.error("Extension file not found: extensions/$fileName", e)
+                    }
+                } else {
+                    logger.info("Extension already installed, skipping: $name ($extensionId)")
+                }
+            }
+            
+            if (extensionsToInstall.isNotEmpty()) {
+                if (sequentialInstall) {
+                    logger.info("Starting sequential installation of ${extensionsToInstall.size} extensions...")
+                    installExtensionsSequentially(extensionsToInstall, 0, installDelay, autoEnable, silentInstall)
+                } else {
+                    logger.info("Starting parallel installation of ${extensionsToInstall.size} extensions...")
+                    extensionsToInstall.forEach { ext ->
+                        installSingleExtension(ext, autoEnable, silentInstall)
+                    }
+                }
+            } else {
+                logger.info("No extensions need to be installed")
+            }
+            
+        } catch (e: Exception) {
+            logger.error("Error installing preinstalled extensions", e)
+        }
+    }
+    
+    /**
+     * 扩展安装信息数据类
+     */
+    private data class ExtensionInstallInfo(
+        val id: String,
+        val fileName: String,
+        val name: String,
+        val enabled: Boolean,
+        val allowPrivateMode: Boolean = true
+    )
+    
+    /**
+     * 顺序安装扩展，避免同时弹出多个安装对话框
+     */
+    private fun installExtensionsSequentially(extensions: List<ExtensionInstallInfo>, index: Int, delay: Long, autoEnable: Boolean, silentInstall: Boolean) {
+        if (index >= extensions.size) {
+            logger.info("All preinstalled extensions installation completed")
+            return
+        }
+        
+        val extension = extensions[index]
+        logger.info("Installing extension ${index + 1}/${extensions.size}: ${extension.name}")
+        
+        try {
+            val inputStream = assets.open("extensions/${extension.fileName}")
+            val tempFile = java.io.File.createTempFile("extension_", ".xpi", cacheDir)
+            
+            try {
+                // 将assets中的文件复制到临时文件
+                inputStream.use { input ->
+                    tempFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                
+                logger.debug("Copied extension to temp file: ${tempFile.absolutePath}")
+                
+                // 安装扩展 - 根据配置决定是否静默安装
+                if (silentInstall) {
+                    logger.debug("Attempting silent installation for: ${extension.name}")
+                }
+                
+                components.core.engine.installWebExtension(
+                    url = "file://${tempFile.absolutePath}",
+                    onSuccess = { installedExtension ->
+                        logger.info("Successfully installed: ${extension.name} (${installedExtension.id})")
+                        
+                        // 启用扩展
+                        if (extension.enabled && autoEnable) {
+                            components.core.engine.enableWebExtension(
+                                installedExtension,
+                                onSuccess = {
+                                    logger.info("Successfully enabled: ${extension.name}")
+                                    
+                                    // 设置扩展在隐私模式下的权限
+                                    if (extension.allowPrivateMode) {
+                                        setExtensionPrivateModePermission(installedExtension, extension.name)
+                                    }
+                                    
+                                    // 清理临时文件并继续安装下一个
+                                    tempFile.delete()
+                                    // 延迟后安装下一个扩展，给用户时间处理当前对话框
+                                    android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                                        installExtensionsSequentially(extensions, index + 1, delay, autoEnable, silentInstall)
+                                    }, delay)
+                                },
+                                onError = { throwable ->
+                                    logger.warn("Failed to enable: ${extension.name}", throwable)
+                                    tempFile.delete()
+                                    // 即使启用失败也继续安装下一个
+                                    android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                                        installExtensionsSequentially(extensions, index + 1, delay, autoEnable, silentInstall)
+                                    }, delay)
+                                }
+                            )
+                        } else {
+                            // 不需要启用，但仍然设置隐私模式权限
+                            if (extension.allowPrivateMode) {
+                                setExtensionPrivateModePermission(installedExtension, extension.name)
+                            }
+                            
+                            // 直接继续下一个
+                            tempFile.delete()
+                            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                                installExtensionsSequentially(extensions, index + 1, delay, autoEnable, silentInstall)
+                            }, delay)
+                        }
+                    },
+                    onError = { throwable ->
+                        logger.warn("Failed to install: ${extension.name}. Error: ${throwable.message}", throwable)
+                        tempFile.delete()
+                        // 安装失败也继续下一个
+                        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                            installExtensionsSequentially(extensions, index + 1, delay, autoEnable, silentInstall)
+                        }, delay)
+                    }
+                )
+            } catch (e: Exception) {
+                logger.error("Failed to create temp file for: ${extension.name}", e)
+                tempFile.delete()
+                // 继续下一个
+                installExtensionsSequentially(extensions, index + 1, delay, autoEnable, silentInstall)
+            }
+        } catch (e: Exception) {
+            logger.error("Failed to read extension file: ${extension.fileName}", e)
+            // 继续下一个
+            installExtensionsSequentially(extensions, index + 1, delay, autoEnable, silentInstall)
+        }
+    }
+    
+    /**
+     * 安装单个扩展（用于并行安装）
+     */
+    private fun installSingleExtension(extension: ExtensionInstallInfo, autoEnable: Boolean, silentInstall: Boolean) {
+        try {
+            val inputStream = assets.open("extensions/${extension.fileName}")
+            val tempFile = java.io.File.createTempFile("extension_", ".xpi", cacheDir)
+            
+            try {
+                inputStream.use { input ->
+                    tempFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                
+                if (silentInstall) {
+                    logger.debug("Attempting silent installation for: ${extension.name}")
+                }
+                
+                components.core.engine.installWebExtension(
+                    url = "file://${tempFile.absolutePath}",
+                    onSuccess = { installedExtension ->
+                        logger.info("Successfully installed: ${extension.name} (${installedExtension.id})")
+                        
+                        if (extension.enabled && autoEnable) {
+                            components.core.engine.enableWebExtension(
+                                installedExtension,
+                                onSuccess = {
+                                    logger.info("Successfully enabled: ${extension.name}")
+                                    // 设置扩展在隐私模式下的权限
+                                    if (extension.allowPrivateMode) {
+                                        setExtensionPrivateModePermission(installedExtension, extension.name)
+                                    }
+                                },
+                                onError = { throwable ->
+                                    logger.warn("Failed to enable: ${extension.name}", throwable)
+                                }
+                            )
+                        } else {
+                            // 即使不启用，也设置隐私模式权限
+                            if (extension.allowPrivateMode) {
+                                setExtensionPrivateModePermission(installedExtension, extension.name)
+                            }
+                        }
+                        tempFile.delete()
+                    },
+                    onError = { throwable ->
+                        logger.warn("Failed to install: ${extension.name}. Error: ${throwable.message}", throwable)
+                        tempFile.delete()
+                    }
+                )
+            } catch (e: Exception) {
+                logger.error("Failed to create temp file for: ${extension.name}", e)
+                tempFile.delete()
+            }
+        } catch (e: Exception) {
+            logger.error("Failed to read extension file: ${extension.fileName}", e)
+        }
+    }
+    
+    /**
+     * 设置扩展在隐私模式下的权限
+     * 自动允许扩展在隐私浏览模式下运行
+     */
+    private fun setExtensionPrivateModePermission(extension: WebExtension, extensionName: String) {
+        try {
+            logger.info("Setting private mode permission for extension: $extensionName")
+            
+            // 设置扩展在隐私模式下可以运行
+            components.core.engine.setAllowedInPrivateBrowsing(
+                extension,
+                allowed = true,
+                onSuccess = {
+                    logger.info("Successfully enabled private mode access for: $extensionName")
+                },
+                onError = { throwable ->
+                    logger.warn("Failed to enable private mode access for: $extensionName", throwable)
+                }
+            )
+        } catch (e: Exception) {
+            logger.error("Error setting private mode permission for: $extensionName", e)
         }
     }
 }

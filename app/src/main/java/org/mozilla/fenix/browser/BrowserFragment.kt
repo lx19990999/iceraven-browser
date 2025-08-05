@@ -769,15 +769,42 @@ class BrowserFragment : BaseBrowserFragment(), UserInteractionHandler {
     }
 
     /**
-     * 检查字符串是否包含指定数量的相同字符（包括字母和数字）
+     * 检查域名是否包含指定数量的相同字符（排除顶级域名）
      */
-    private fun hasSameCharacters(text: String, count: Int): Boolean {
+    private fun hasSameCharacters(domain: String, count: Int): Boolean {
+        // 常见的顶级域名列表
+        val commonTlds = setOf(
+            "com", "org", "net", "edu", "gov", "mil", "int", "co", "io", "me", "tv", "cc",
+            "cn", "uk", "de", "fr", "jp", "au", "ca", "ru", "br", "in", "it", "es", "nl",
+            "pl", "ch", "se", "no", "dk", "fi", "be", "at", "cz", "hu", "pt", "gr", "ie",
+            "il", "za", "mx", "ar", "cl", "pe", "ve", "co", "ec", "uy", "py", "bo", "gf",
+            "sr", "gy", "fk", "gs", "bv", "hm", "tf", "aq"
+        )
+        
+        // 分割域名，移除顶级域名部分
+        val parts = domain.split(".")
+        val domainWithoutTld = if (parts.size > 1) {
+            // 检查最后一个部分是否是常见的顶级域名
+            val lastPart = parts.last()
+            if (commonTlds.contains(lastPart)) {
+                // 移除顶级域名，只检查主域名部分
+                parts.dropLast(1).joinToString(".")
+            } else {
+                domain
+            }
+        } else {
+            domain
+        }
+        
+        Log.d("AutoRefresh", "Checking domain: '$domain' -> main part: '$domainWithoutTld'")
+        
         val charCounts = mutableMapOf<Char, Int>()
-        for (char in text) {
+        for (char in domainWithoutTld) {
             // 只检查字母和数字字符，忽略点号、连字符等特殊字符
             if (char.isLetterOrDigit()) {
                 charCounts[char] = charCounts.getOrDefault(char, 0) + 1
                 if (charCounts[char]!! >= count) {
+                    Log.d("AutoRefresh", "Found $count same characters '$char' in domain main part: '$domainWithoutTld'")
                     return true
                 }
             }

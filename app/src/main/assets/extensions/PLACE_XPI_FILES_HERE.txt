@@ -1,0 +1,13 @@
+请将扩展的.xpi文件放在这个目录中：
+
+需要的文件：
+- ublock-origin.xpi (从 https://github.com/gorhill/uBlock/releases 下载)
+- tampermonkey.xpi (从 https://addons.mozilla.org/firefox/addon/tampermonkey/ 下载)
+
+可选的文件：
+- privacy-badger.xpi
+- decentraleyes.xpi
+
+下载后重命名为上述文件名，然后重新编译应用。
+
+详细说明请查看 HOW_TO_ADD_EXTENSIONS.md 文件。

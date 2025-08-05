@@ -1,0 +1,36 @@
+{
+  "install_settings": {
+    "sequential_install": true,
+    "install_delay_ms": 1000,
+    "auto_enable": true,
+    "silent_install": true,
+    "allow_private_mode": true
+  },
+  "extensions": [
+    {
+      "id": "uBlock0@raymondhill.net",
+      "name": "uBlock Origin",
+      "filename": "ublock-origin-1.65.0.xpi",
+      "enabled": true,
+      "description": "高效的广告拦截器，保护隐私并提升浏览速度",
+      "note": "ID必须与扩展manifest.json中的id字段完全一致"
+    },
+    {
+      "id": "firefox@tampermonkey.net",
+      "name": "Tampermonkey",
+      "filename": "tampermonkey-5.3.3.xpi",
+      "enabled": true,
+      "description": "用户脚本管理器，允许运行自定义JavaScript脚本来增强网页功能"
+    }
+  ],
+  "common_extension_ids": {
+    "uBlock Origin": "uBlock0@raymondhill.net",
+    "Tampermonkey": "firefox@tampermonkey.net",
+    "Privacy Badger": "jid1-MnnxcxisBPnSXQ@jetpack",
+    "Decentraleyes": "jid1-BoFifL9Vbdl2zQ@jetpack",
+    "Dark Reader": "addon@darkreader.org",
+    "ClearURLs": "{74145f27-f039-47ce-a470-a662b129930a}",
+    "NoScript": "{73a6fe31-595d-460b-a920-fcc0f8843232}",
+    "Ghostery": "firefox@ghostery.com"
+  }
+}

@@ -142,8 +142,26 @@ class TabsTrayFragment : AppCompatDialogFragment() {
         val initialPage = args.page
         val activity = activity as HomeActivity
         val initialInactiveExpanded = requireComponents.appStore.state.inactiveTabsExpanded
-        val inactiveTabs = requireComponents.core.store.state.actualInactiveTabs(requireContext().settings())
-        val normalTabs = requireComponents.core.store.state.normalTabs - inactiveTabs.toSet()
+        // 临时修复：确保至少显示所有normal tabs
+        val allNormalTabs = requireComponents.core.store.state.normalTabs
+        val inactiveTabs = if (requireContext().settings().inactiveTabsAreEnabled) {
+            requireComponents.core.store.state.actualInactiveTabs(requireContext().settings())
+        } else {
+            emptyList()
+        }
+        val normalTabs = if (allNormalTabs.isEmpty()) {
+            // 如果没有normal tabs，直接使用所有tabs
+            allNormalTabs
+        } else {
+            // 确保至少有一些tabs显示在normal tabs中
+            val activeNormalTabs = allNormalTabs - inactiveTabs.toSet()
+            if (activeNormalTabs.isEmpty() && allNormalTabs.isNotEmpty()) {
+                // 如果所有tabs都被标记为inactive，至少显示最近的一个
+                listOf(allNormalTabs.maxByOrNull { it.lastAccess } ?: allNormalTabs.first())
+            } else {
+                activeNormalTabs
+            }
+        }
 
         enablePbmPinLauncher = registerForActivityResult(
             onSuccess = {
@@ -443,16 +461,28 @@ class TabsTrayFragment : AppCompatDialogFragment() {
                     newTabFab,
                 ),
             )
-            skipCollapsed = true
+            // 允许collapsed状态，这样可以根据内容自动调整高度
+            skipCollapsed = false
+            // 设置适合的peek高度，让内容可见但不占据整个屏幕
+            peekHeight = (resources.displayMetrics.heightPixels * 0.6).toInt()
+            // 允许拖拽
+            isDraggable = true
         }
+
+        // 计算合适的peek高度
+        val tabCount = max(
+            requireContext().components.core.store.state.normalTabs.size,
+            requireContext().components.core.store.state.privateTabs.size,
+        )
+        
+        // 根据tab数量动态调整peek高度
+        val dynamicPeekHeight = calculateDynamicPeekHeight(tabCount)
+        behavior.peekHeight = dynamicPeekHeight
 
         trayBehaviorManager = TabSheetBehaviorManager(
             behavior = behavior,
             orientation = resources.configuration.orientation,
-            maxNumberOfTabs = max(
-                requireContext().components.core.store.state.normalTabs.size,
-                requireContext().components.core.store.state.privateTabs.size,
-            ),
+            maxNumberOfTabs = tabCount,
             numberForExpandingTray = if (requireContext().settings().gridTabView) {
                 EXPAND_AT_GRID_SIZE
             } else {
@@ -848,6 +878,39 @@ class TabsTrayFragment : AppCompatDialogFragment() {
         shouldShowBanner: Boolean,
     ): Boolean {
         return isPrivateMode && hasPrivateTabs && biometricAvailable && !privateLockEnabled && shouldShowBanner
+    }
+
+    /**
+     * 根据tab数量计算合适的peek高度
+     */
+    private fun calculateDynamicPeekHeight(tabCount: Int): Int {
+        val displayMetrics = requireContext().resources.displayMetrics
+        val screenHeight = displayMetrics.heightPixels
+        
+        // 基础高度：包含header和一些padding
+        val baseHeight = (120 * displayMetrics.density).toInt() // 120dp
+        
+        // 每个tab项的高度
+        val tabItemHeight = if (requireContext().settings().gridTabView) {
+            (180 * displayMetrics.density).toInt() // grid模式下每个item更高
+        } else {
+            (72 * displayMetrics.density).toInt() // list模式下每个item的高度
+        }
+        
+        // 计算需要的高度
+        val neededHeight = baseHeight + (tabCount * tabItemHeight)
+        
+        // 限制最大高度为屏幕高度的80%
+        val maxHeight = (screenHeight * 0.8).toInt()
+        
+        // 限制最小高度为屏幕高度的30%
+        val minHeight = (screenHeight * 0.3).toInt()
+        
+        return when {
+            neededHeight > maxHeight -> maxHeight
+            neededHeight < minHeight -> minHeight
+            else -> neededHeight
+        }
     }
 
     companion object {

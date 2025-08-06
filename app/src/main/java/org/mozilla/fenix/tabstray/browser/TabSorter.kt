@@ -6,7 +6,7 @@ package org.mozilla.fenix.tabstray.browser
 
 import mozilla.components.browser.state.state.TabPartition
 import mozilla.components.browser.state.state.TabSessionState
-import mozilla.components.browser.state.state.isActive
+// import mozilla.components.browser.state.state.isActive
 import mozilla.components.browser.tabstray.TabsTray
 import mozilla.components.feature.tabs.tabstray.TabsFeature
 import org.mozilla.fenix.ext.maxActiveTime
@@ -28,14 +28,29 @@ class TabSorter(
         val inactiveTabs = allNormalTabs.getInactiveTabs(settings)
         val normalTabs = allNormalTabs - inactiveTabs
 
+        // 确保至少有一些tabs显示在normal tabs中
+        val finalNormalTabs = if (normalTabs.isEmpty() && allNormalTabs.isNotEmpty()) {
+            // 如果所有tabs都被标记为inactive，至少显示最近的一个
+            listOf(allNormalTabs.maxByOrNull { it.lastAccess } ?: allNormalTabs.first())
+        } else {
+            normalTabs
+        }
+
+        val finalInactiveTabs = if (finalNormalTabs != normalTabs) {
+            // 如果我们移动了一个tab到normal tabs，从inactive tabs中移除它
+            inactiveTabs - finalNormalTabs.toSet()
+        } else {
+            inactiveTabs
+        }
+
         // Private tabs
         tabsTrayStore?.dispatch(TabsTrayAction.UpdatePrivateTabs(privateTabs))
 
         // Inactive tabs
-        tabsTrayStore?.dispatch(TabsTrayAction.UpdateInactiveTabs(inactiveTabs))
+        tabsTrayStore?.dispatch(TabsTrayAction.UpdateInactiveTabs(finalInactiveTabs))
 
         // Normal tabs
-        tabsTrayStore?.dispatch(TabsTrayAction.UpdateNormalTabs(normalTabs))
+        tabsTrayStore?.dispatch(TabsTrayAction.UpdateNormalTabs(finalNormalTabs))
 
         // Selected tab Id
         tabsTrayStore?.dispatch(TabsTrayAction.UpdateSelectedTabId(selectedTabId))
@@ -48,7 +63,11 @@ class TabSorter(
 private fun List<TabSessionState>.getInactiveTabs(settings: Settings): List<TabSessionState> {
     val inactiveTabsEnabled = settings.inactiveTabsAreEnabled
     return if (inactiveTabsEnabled) {
-        filter { !it.isActive(maxActiveTime) }
+        val currentTime = System.currentTimeMillis()
+        filter { tab ->
+            val timeSinceLastAccess = currentTime - tab.lastAccess
+            timeSinceLastAccess > maxActiveTime
+        }
     } else {
         emptyList()
     }

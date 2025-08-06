@@ -67,9 +67,15 @@ internal class TabSheetBehaviorManager(
 
     @VisibleForTesting
     internal fun updateBehaviorState(isLandscape: Boolean) {
-        behavior.state = if (isLandscape || maxNumberOfTabs >= numberForExpandingTray) {
+        // 根据tab数量和屏幕方向智能设置状态
+        behavior.state = if (isLandscape) {
+            // 横屏时总是展开
+            BottomSheetBehavior.STATE_EXPANDED
+        } else if (maxNumberOfTabs >= numberForExpandingTray) {
+            // tab数量多时展开
             BottomSheetBehavior.STATE_EXPANDED
         } else {
+            // tab数量少时使用collapsed状态，让高度自适应
             BottomSheetBehavior.STATE_COLLAPSED
         }
     }
@@ -101,10 +107,10 @@ internal class TraySheetBehaviorCallback(
         when (newState) {
             BottomSheetBehavior.STATE_HIDDEN -> trayInteractor.onTabTrayDismissed()
 
-            // We only support expanded and collapsed states.
-            // Otherwise the tray may be left in an unusable state. See #14980.
-            BottomSheetBehavior.STATE_HALF_EXPANDED ->
-                behavior.state = BottomSheetBehavior.STATE_HIDDEN
+            // 允许half-expanded状态，这样可以更好地适应内容高度
+            BottomSheetBehavior.STATE_HALF_EXPANDED -> {
+                // 不强制隐藏，让用户可以在这个状态下使用
+            }
 
             // Reset the dragged lowest top value
             BottomSheetBehavior.STATE_EXPANDED, BottomSheetBehavior.STATE_COLLAPSED -> {
